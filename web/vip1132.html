@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Download VIP 1132 User Manager v3.0.9 for Windows." />
+  <title>VIP 1132 User Manager • PNP@VIP</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    :root{
+      --bg: #05060a;
+      --panel: rgba(255,255,255,0.06);
+      --panel2: rgba(255,255,255,0.09);
+      --text: #f7f8ff;
+      --muted: rgba(239,243,255,0.76);
+      --muted2: rgba(221,230,248,0.60);
+      --pink: #ff3ccb;
+      --violet: #8a5cff;
+      --blue: #2f6bff;
+      --aqua: #52f6ff;
+      --green: #4cf0b5;
+      --shadow: 0 24px 80px rgba(0,0,0,0.58);
+      --radius: 20px;
+    }
+
+    *{ box-sizing: border-box; }
+
+    body.vip-subpage{
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+      background:
+        radial-gradient(1100px 680px at 18% 4%, rgba(255,60,203,0.18), transparent 60%),
+        radial-gradient(950px 620px at 92% 20%, rgba(47,107,255,0.20), transparent 65%),
+        radial-gradient(850px 560px at 60% 110%, rgba(82,246,255,0.10), transparent 55%),
+        linear-gradient(180deg, #020307, var(--bg));
+    }
+
+    .vip-wrap{
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 34px 18px 60px;
+    }
+
+    .vip-header{
+      text-align: center;
+      padding: 20px 18px 12px;
+    }
+
+    .vip-demo{
+      display: block;
+      width: min(300px, 72vw);
+      aspect-ratio: 1;
+      margin: 0 auto 18px;
+      object-fit: cover;
+      border-radius: 26px;
+      background: #000;
+      border: 1px solid rgba(82,246,255,0.42);
+      box-shadow: 0 0 32px rgba(82,246,255,0.18), 0 0 58px rgba(255,60,203,0.18);
+    }
+
+    .vip-kicker{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      color: #c8fff1;
+      background: rgba(76,240,181,0.10);
+      border: 1px solid rgba(76,240,181,0.30);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .vip-title{
+      margin: 18px 0 8px;
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      line-height: 1.04;
+      color: #fff;
+      text-shadow: 0 0 15px rgba(82,246,255,0.30), 0 0 24px rgba(255,60,203,0.34);
+    }
+
+    .vip-subtitle{
+      margin: 0 auto;
+      max-width: 790px;
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.65;
+    }
+
+    .vip-panel{
+      margin-top: 28px;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--panel), rgba(255,255,255,0.025));
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: var(--shadow);
+      overflow: visible;
+      backdrop-filter: blur(18px);
+    }
+
+    .vip-panel-inner{
+      padding: 26px 22px;
+    }
+
+    .vip-row{
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+      gap: 18px;
+      align-items: center;
+    }
+
+    .vip-card{
+      border-radius: 16px;
+      background: linear-gradient(180deg, var(--panel2), rgba(255,255,255,0.035));
+      border: 1px solid rgba(255,255,255,0.10);
+      padding: 20px;
+    }
+
+    .vip-card h2{
+      margin: 0 0 9px;
+      font-size: 1.5rem;
+    }
+
+    .vip-card p{
+      margin: 0;
+      color: var(--muted2);
+      line-height: 1.55;
+      font-size: 1.02rem;
+    }
+
+    .vip-bullets{
+      margin: 16px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 9px;
+      font-size: 0.96rem;
+    }
+
+    .vip-bullets li{
+      display: flex;
+      gap: 10px;
+      line-height: 1.42;
+    }
+
+    .vip-actions{
+      display: grid;
+      gap: 13px;
+      position: relative;
+      z-index: 5;
+    }
+
+    .download-menu{
+      position: relative;
+    }
+
+    .download-menu summary{
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .download-menu summary::-webkit-details-marker{ display: none; }
+
+    .vip-btn{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 18px 20px;
+      border-radius: 16px;
+      text-decoration: none;
+      font-weight: 900;
+      letter-spacing: 0.025em;
+      color: white;
+      font-size: 1.08rem;
+      background: linear-gradient(45deg, var(--pink), var(--violet), var(--blue));
+      border: 1px solid rgba(255,255,255,0.24);
+      box-shadow: 0 0 24px rgba(255,60,203,0.42), 0 0 42px rgba(47,107,255,0.34);
+      transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+    }
+
+    .vip-btn:hover{
+      transform: translateY(-3px) scale(1.015);
+      filter: brightness(1.08);
+      box-shadow: 0 0 34px rgba(255,60,203,0.58), 0 0 56px rgba(47,107,255,0.44);
+    }
+
+    .download-options{
+      display: grid;
+      gap: 9px;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 15px;
+      background: rgba(5,7,13,0.97);
+      border: 1px solid rgba(82,246,255,0.28);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.54);
+    }
+
+    .download-option{
+      display: block;
+      padding: 13px 14px;
+      border-radius: 11px;
+      color: white;
+      text-decoration: none;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.09);
+      transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+    }
+
+    .download-option:hover{
+      transform: translateX(3px);
+      background: rgba(82,246,255,0.10);
+      border-color: rgba(82,246,255,0.50);
+    }
+
+    .download-option strong{
+      display: block;
+      margin-bottom: 3px;
+      font-size: 0.98rem;
+    }
+
+    .download-option span{
+      color: var(--muted2);
+      font-size: 0.78rem;
+      line-height: 1.35;
+    }
+
+    .vip-note{
+      color: var(--muted2);
+      font-size: 0.79rem;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .vip-footer{
+      margin-top: 22px;
+      text-align: center;
+      color: rgba(255,255,255,0.45);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 780px){
+      .vip-row{ grid-template-columns: 1fr; }
+      .vip-panel-inner{ padding: 18px; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .vip-btn, .download-option{ transition: none; }
+    }
+  </style>
+</head>
+
+<body class="vip-subpage">
+  <div class="vip-wrap">
+    <header class="vip-header">
+      <video class="vip-demo" autoplay muted loop playsinline preload="metadata" aria-label="VIP 1132 animated logo">
+        <source src="/assets/vip1132-installation.mp4" type="video/mp4" />
+      </video>
+
+      <span class="vip-kicker">● VERSION 3.0.9 AVAILABLE</span>
+      <h1 class="vip-title">VIP 1132 User Manager</h1>
+      <p class="vip-subtitle">
+        A faster, redesigned Windows deployment console that creates the next user, installs Zoom,
+        applies dark mode, and opens Zoom in the new user session.
+      </p>
+    </header>
+
+    <main class="vip-panel">
+      <div class="vip-panel-inner vip-row">
+        <div class="vip-card">
+          <h2>What’s new in v3</h2>
+          <p>
+            Rebuilt as a lightweight native Windows app for much faster startup, clearer progress,
+            and a polished glass-and-neon interface.
+          </p>
+
+          <ul class="vip-bullets">
+            <li>⚡ Faster setup with safe download reuse and parallel preparation</li>
+            <li>🧼 Clean Zoom removal, numeric user rotation, and fresh installation</li>
+            <li>🎚️ Applies dark mode only; audio, video, and meeting settings stay untouched</li>
+            <li>✅ Opens Zoom as the newly created user and verifies the active session</li>
+            <li>✨ Compact window with smooth decimal progress and a live activity glow</li>
+          </ul>
+        </div>
+
+        <div class="vip-actions">
+          <details class="download-menu">
+            <summary class="vip-btn">⬇️ Download v3.0.9 <span aria-hidden="true">⌄</span></summary>
+            <div class="download-options">
+              <a class="download-option" href="/downloads/VIP1132-Setup-3.0.9.exe" download>
+                <strong>Installable — Recommended</strong>
+                <span>About 50 MB · Includes everything needed</span>
+              </a>
+              <a class="download-option" href="/downloads/VIP1132-Portable-3.0.9.zip" download>
+                <strong>Portable ZIP</strong>
+                <span>Smaller download · Requires .NET 8 Desktop Runtime</span>
+              </a>
+            </div>
+          </details>
+
+          <div class="vip-note">
+            Windows may show a SmartScreen warning because this independent build is not code-signed yet.
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="vip-footer">
+      <p>© 2026 PNP@VIP • Built with ❤️ and a bit of delulu.</p>
+    </footer>
+  </div>
+</body>
+</html>

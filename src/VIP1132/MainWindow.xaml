@@ -1,0 +1,215 @@
+<Window x:Class="VIP1132.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Will's VIP 1132 User Manager"
+        Width="900" Height="650" MinWidth="760" MinHeight="560"
+        WindowStartupLocation="CenterScreen"
+        Loaded="MainWindow_Loaded">
+  <Grid x:Name="RootSurface">
+    <Grid.Background>
+      <RadialGradientBrush Center="0.18,0.05" GradientOrigin="0.18,0.05" RadiusX="0.92" RadiusY="1.08">
+        <GradientStop Color="#FF111326" Offset="0" />
+        <GradientStop Color="#FF050712" Offset="0.42" />
+        <GradientStop Color="#FF020308" Offset="1" />
+      </RadialGradientBrush>
+    </Grid.Background>
+    <Grid.Triggers>
+      <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+        <BeginStoryboard>
+          <Storyboard RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="Spark1" Storyboard.TargetProperty="Opacity" From="0" To="0.9" Duration="0:0:1.2" AutoReverse="True" BeginTime="0:0:0.5" />
+            <DoubleAnimation Storyboard.TargetName="Spark2" Storyboard.TargetProperty="Opacity" From="0" To="0.78" Duration="0:0:1.6" AutoReverse="True" BeginTime="0:0:3.1" />
+            <DoubleAnimation Storyboard.TargetName="Spark3" Storyboard.TargetProperty="Opacity" From="0" To="0.7" Duration="0:0:1.05" AutoReverse="True" BeginTime="0:0:5.4" />
+            <DoubleAnimation Storyboard.TargetName="Spark4" Storyboard.TargetProperty="Opacity" From="0" To="0.82" Duration="0:0:1.35" AutoReverse="True" BeginTime="0:0:7.8" />
+          </Storyboard>
+        </BeginStoryboard>
+      </EventTrigger>
+    </Grid.Triggers>
+
+    <!-- Technical grid and atmospheric color, kept intentionally quiet. -->
+    <Rectangle IsHitTestVisible="False" Opacity="0.11">
+      <Rectangle.Fill>
+        <DrawingBrush TileMode="Tile" Viewport="0,0,52,52" ViewportUnits="Absolute">
+          <DrawingBrush.Drawing>
+            <GeometryDrawing Brush="Transparent">
+              <GeometryDrawing.Pen><Pen Brush="#FF52F6FF" Thickness="0.55" /></GeometryDrawing.Pen>
+              <GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,52,52" /></GeometryDrawing.Geometry>
+            </GeometryDrawing>
+          </DrawingBrush.Drawing>
+        </DrawingBrush>
+      </Rectangle.Fill>
+      <Rectangle.OpacityMask>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+          <GradientStop Color="#BFFFFFFF" Offset="0" />
+          <GradientStop Color="#18FFFFFF" Offset="0.7" />
+          <GradientStop Color="#00FFFFFF" Offset="1" />
+        </LinearGradientBrush>
+      </Rectangle.OpacityMask>
+    </Rectangle>
+    <Ellipse Width="600" Height="420" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-280,-210,0,0" IsHitTestVisible="False" Opacity="0.16">
+      <Ellipse.Fill><RadialGradientBrush><GradientStop Color="#FFA855F7" Offset="0" /><GradientStop Color="#00A855F7" Offset="1" /></RadialGradientBrush></Ellipse.Fill>
+    </Ellipse>
+    <Ellipse Width="660" Height="500" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-330,-280" IsHitTestVisible="False" Opacity="0.13">
+      <Ellipse.Fill><RadialGradientBrush><GradientStop Color="#FF52F6FF" Offset="0" /><GradientStop Color="#0052F6FF" Offset="1" /></RadialGradientBrush></Ellipse.Fill>
+    </Ellipse>
+
+    <!-- Small, occasional sparkles. -->
+    <Canvas IsHitTestVisible="False" Opacity="0.9">
+      <Ellipse x:Name="Spark1" Canvas.Left="84" Canvas.Top="174" Width="3" Height="3" Fill="#FF52F6FF" Opacity="0"><Ellipse.Effect><DropShadowEffect Color="#52F6FF" BlurRadius="10" ShadowDepth="0" /></Ellipse.Effect></Ellipse>
+      <Ellipse x:Name="Spark2" Canvas.Right="102" Canvas.Top="238" Width="4" Height="4" Fill="#FFFF3CCB" Opacity="0"><Ellipse.Effect><DropShadowEffect Color="#FF3CCB" BlurRadius="12" ShadowDepth="0" /></Ellipse.Effect></Ellipse>
+      <Ellipse x:Name="Spark3" Canvas.Left="55" Canvas.Bottom="128" Width="2" Height="2" Fill="White" Opacity="0"><Ellipse.Effect><DropShadowEffect Color="#52F6FF" BlurRadius="9" ShadowDepth="0" /></Ellipse.Effect></Ellipse>
+      <Ellipse x:Name="Spark4" Canvas.Right="224" Canvas.Bottom="88" Width="3" Height="3" Fill="#FFA855F7" Opacity="0"><Ellipse.Effect><DropShadowEffect Color="#A855F7" BlurRadius="11" ShadowDepth="0" /></Ellipse.Effect></Ellipse>
+    </Canvas>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+
+      <Border Grid.Row="0" Background="#E8070910" BorderBrush="#2FFFFFFF" BorderThickness="0,0,0,1" Padding="28,15">
+        <Border.Effect><DropShadowEffect Color="#000000" BlurRadius="24" ShadowDepth="8" Opacity="0.65" /></Border.Effect>
+        <Grid>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+          <Border Width="68" Height="68" CornerRadius="18" Background="#FF000000" BorderBrush="#5E52F6FF" BorderThickness="1" Margin="0,0,18,0" ClipToBounds="True">
+            <Border.Effect><DropShadowEffect Color="#FF3CCB" BlurRadius="18" ShadowDepth="0" Opacity="0.48" /></Border.Effect>
+            <Image Source="Assets/vip1132-logo-black.png" Stretch="UniformToFill" Margin="2" />
+          </Border>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="WILL'S VIP 1132" FontSize="23" FontWeight="Bold">
+                <TextBlock.Foreground><LinearGradientBrush StartPoint="0,0" EndPoint="1,0"><GradientStop Color="#FFF8FBFF" Offset="0" /><GradientStop Color="#FF52F6FF" Offset="0.56" /><GradientStop Color="#FFFF64D5" Offset="1" /></LinearGradientBrush></TextBlock.Foreground>
+                <TextBlock.Effect><DropShadowEffect Color="#52F6FF" BlurRadius="9" ShadowDepth="0" Opacity="0.45" /></TextBlock.Effect>
+              </TextBlock>
+              <Border Background="#291F2736" BorderBrush="#5BFFFFFF" BorderThickness="1" CornerRadius="9" Padding="8,3" Margin="12,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="v3.0.9" Foreground="#FFC6D3E8" FontSize="10" FontWeight="Bold" />
+              </Border>
+            </StackPanel>
+            <TextBlock Text="ZOOM DEPLOYMENT CONSOLE  /  USER ROTATION SYSTEM" Style="{StaticResource MicroLabel}" Margin="1,5,0,0" />
+          </StackPanel>
+          <Border Grid.Column="2" Background="#B80B1D1B" BorderBrush="#674CF0B5" BorderThickness="1" CornerRadius="12" Padding="13,8" VerticalAlignment="Center">
+            <Border.Effect><DropShadowEffect Color="#4CF0B5" BlurRadius="14" ShadowDepth="0" Opacity="0.23" /></Border.Effect>
+            <StackPanel Orientation="Horizontal">
+              <Ellipse Width="7" Height="7" Fill="{StaticResource SuccessBrush}" Margin="0,0,8,0"><Ellipse.Effect><DropShadowEffect Color="#4CF0B5" BlurRadius="8" ShadowDepth="0" /></Ellipse.Effect></Ellipse>
+              <TextBlock x:Name="AdminStatusText" Text="Administrator" Foreground="#FFB8FFE7" FontWeight="SemiBold" FontSize="11" />
+            </StackPanel>
+          </Border>
+        </Grid>
+      </Border>
+
+      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="28,22,28,30">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+
+          <Grid Grid.Row="0" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Style="{StaticResource GlassCard}" Padding="16,12" CornerRadius="14">
+              <StackPanel><TextBlock Text="MACHINE" Style="{StaticResource MicroLabel}" /><TextBlock x:Name="MachineText" Text="—" FontWeight="SemiBold" FontSize="15" Margin="0,5,0,0" /></StackPanel>
+            </Border>
+            <Border Grid.Column="2" Style="{StaticResource GlassCard}" Padding="16,12" CornerRadius="14">
+              <StackPanel><TextBlock Text="ACTIVE ZOOM USER" Style="{StaticResource MicroLabel}" /><TextBlock x:Name="ActiveUserText" Text="None yet" Foreground="{StaticResource NeonCyanBrush}" FontWeight="SemiBold" FontSize="15" Margin="0,5,0,0"><TextBlock.Effect><DropShadowEffect Color="#52F6FF" BlurRadius="7" ShadowDepth="0" Opacity="0.38" /></TextBlock.Effect></TextBlock></StackPanel>
+            </Border>
+            <Border Grid.Column="4" Style="{StaticResource GlassCard}" Padding="16,12" CornerRadius="14">
+              <StackPanel><TextBlock Text="LAST SETUP" Style="{StaticResource MicroLabel}" /><TextBlock x:Name="LastSetupText" Text="Not run" TextTrimming="CharacterEllipsis" FontWeight="SemiBold" FontSize="15" Margin="0,5,0,0" /></StackPanel>
+            </Border>
+          </Grid>
+
+          <Border Grid.Row="1" Style="{StaticResource GlassCard}" Padding="1" Margin="0,0,0,15" BorderBrush="#7B7668FF" CornerRadius="20">
+            <Border Background="#ED090D16" CornerRadius="19" Padding="25,21">
+              <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <StackPanel Margin="0,0,32,0">
+                  <TextBlock Text="FULL DEPLOYMENT" Style="{StaticResource MicroLabel}" Foreground="#FF8A9CB8" />
+                  <TextBlock Text="Prepare the next Zoom profile" FontSize="24" FontWeight="SemiBold" Margin="0,5,0,0" />
+                  <TextBlock x:Name="SequenceSummaryText" Text="Creates the next user, installs Zoom, applies dark mode, and opens it visibly."
+                             Foreground="#FFADBCD1" FontSize="13" TextWrapping="Wrap" Margin="0,7,0,15" />
+                  <ProgressBar x:Name="SetupProgress" Style="{StaticResource NeonProgress}" Minimum="0" Maximum="100" Value="0" />
+                  <TextBlock x:Name="ProgressText" Text="All systems ready" Foreground="#FF8093AF" FontSize="11" Margin="0,8,0,0" />
+                </StackPanel>
+                <Button x:Name="RunAllButton" Grid.Column="1" Style="{StaticResource PrimaryGlassButton}" Click="RunAllButton_Click"
+                        MinWidth="210" Content="⚡  RUN FULL SETUP" VerticalAlignment="Center" />
+              </Grid>
+            </Border>
+          </Border>
+
+          <Grid Grid.Row="2" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="3*" /><ColumnDefinition Width="15" /><ColumnDefinition Width="2*" /></Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Style="{StaticResource GlassCard}">
+              <StackPanel x:Name="ActionsPanel">
+                <TextBlock Text="QUICK ACTIONS" Style="{StaticResource MicroLabel}" />
+                <TextBlock Text="Fine control for individual workflow steps" Foreground="{StaticResource TextMutedBrush}" FontSize="12" Margin="0,5,0,15" />
+                <UniformGrid Columns="2" Rows="3">
+                  <Button Style="{StaticResource GlassButton}" Margin="0,0,6,8" Click="CreateUserButton_Click" Content="＋  Create next user" />
+                  <Button Style="{StaticResource GlassButton}" Margin="6,0,0,8" Click="DeleteUserButton_Click" Content="×  Delete active user" />
+                  <Button Style="{StaticResource GlassButton}" Margin="0,0,6,8" Click="DownloadZoomButton_Click" Content="↓  Download Zoom" />
+                  <Button Style="{StaticResource GlassButton}" Margin="6,0,0,8" Click="UninstallZoomButton_Click" Content="↻  Clean uninstall" />
+                  <Button Style="{StaticResource GlassButton}" Margin="0,0,6,0" Click="ListUsersButton_Click" Content="☷  List local users" />
+                  <Button Style="{StaticResource GlassButton}" Margin="6,0,0,0" Click="OpenDownloadsButton_Click" Content="□  Open downloads" />
+                </UniformGrid>
+              </StackPanel>
+            </Border>
+
+            <Border Grid.Column="2" Style="{StaticResource GlassCard}">
+              <StackPanel>
+                <DockPanel LastChildFill="False">
+                  <StackPanel DockPanel.Dock="Left"><TextBlock Text="ZOOM PROFILE" Style="{StaticResource MicroLabel}" /><TextBlock Text="Dark mode only" Foreground="{StaticResource TextMutedBrush}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
+                  <Border DockPanel.Dock="Right" Background="#CC0A2825" BorderBrush="#5B4CF0B5" BorderThickness="1" CornerRadius="8" Padding="8,4" Margin="12,0,0,0"><TextBlock Text="AUTO" Foreground="#FF7FF7D1" FontSize="10" FontWeight="Bold" /></Border>
+                </DockPanel>
+                <WrapPanel Margin="0,17,0,12">
+                  <Border Background="#C7141B27" BorderBrush="#2FFFFFFF" BorderThickness="1" CornerRadius="8" Padding="9,6" Margin="0,0,7,7"><TextBlock Text="Dark mode" FontSize="11" /></Border>
+                </WrapPanel>
+                <Button Style="{StaticResource GlassButton}" Click="ProfileDetailsButton_Click" Content="View requested setting  →" HorizontalAlignment="Stretch" />
+              </StackPanel>
+            </Border>
+          </Grid>
+
+          <Border Grid.Row="3" Style="{StaticResource GlassCard}" Padding="0" MinHeight="165" CornerRadius="16">
+            <Grid>
+              <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+              <Border Background="#E4111620" BorderBrush="#2FFFFFFF" BorderThickness="0,0,0,1" CornerRadius="16,16,0,0" Padding="16,10">
+                <DockPanel>
+                  <StackPanel Orientation="Horizontal" DockPanel.Dock="Left"><Ellipse Width="6" Height="6" Fill="{StaticResource NeonCyanBrush}" Margin="0,0,9,0"><Ellipse.Effect><DropShadowEffect Color="#52F6FF" BlurRadius="7" ShadowDepth="0" /></Ellipse.Effect></Ellipse><TextBlock Text="SYSTEM ACTIVITY" Style="{StaticResource MicroLabel}" Foreground="#FF9DB0C9" /></StackPanel>
+                  <TextBlock x:Name="ActivityStateText" DockPanel.Dock="Right" Text="Ready" Foreground="{StaticResource TextMutedBrush}" FontSize="11" />
+                </DockPanel>
+              </Border>
+              <RichTextBox x:Name="OutputLog" Grid.Row="1" IsReadOnly="True" BorderThickness="0" Background="#D805070C"
+                           Foreground="#FFC8D6EA" FontFamily="Cascadia Mono, Consolas" FontSize="11.5" Padding="16,11"
+                           VerticalScrollBarVisibility="Auto" IsDocumentEnabled="False" />
+            </Grid>
+          </Border>
+        </Grid>
+      </ScrollViewer>
+    </Grid>
+
+    <!-- Full setup becomes a focused deployment experience using the supplied animation. -->
+    <Grid x:Name="DeploymentOverlay" Panel.ZIndex="50" Visibility="Collapsed" Background="#F5020307">
+      <Grid Background="#40000000">
+        <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="500">
+          <Border Style="{StaticResource GlassCard}" BorderBrush="#8A52F6FF" BorderThickness="1" CornerRadius="26" Padding="1">
+            <Border.Effect><DropShadowEffect Color="#A855F7" BlurRadius="50" ShadowDepth="0" Opacity="0.68" /></Border.Effect>
+            <Border Background="#FA05070D" CornerRadius="25" Padding="28,24">
+              <StackPanel>
+                <TextBlock Text="VIP 1132 DEPLOYMENT" Style="{StaticResource MicroLabel}" Foreground="#FF9BB0CD" HorizontalAlignment="Center" />
+                <Grid Width="280" Height="280" Margin="0,14,0,10">
+                  <Ellipse Stroke="#3652F6FF" StrokeThickness="1" Margin="8"><Ellipse.Effect><DropShadowEffect Color="#52F6FF" BlurRadius="17" ShadowDepth="0" Opacity="0.32" /></Ellipse.Effect></Ellipse>
+                  <Border CornerRadius="140" ClipToBounds="True" Background="Black" Margin="15">
+                    <MediaElement x:Name="SetupVideo" LoadedBehavior="Manual" UnloadedBehavior="Stop" IsMuted="True" Stretch="UniformToFill"
+                                  MediaEnded="SetupVideo_MediaEnded" MediaFailed="SetupVideo_MediaFailed" />
+                  </Border>
+                </Grid>
+                <TextBlock x:Name="DeploymentStepText" Text="Initializing systems…" FontSize="19" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                <TextBlock Text="Keep this window open while VIP 1132 completes the profile." Foreground="{StaticResource TextMutedBrush}" FontSize="11" HorizontalAlignment="Center" Margin="0,5,0,18" />
+                <ProgressBar x:Name="DeploymentProgress" Style="{StaticResource NeonProgress}" Minimum="0" Maximum="100" Value="0" Height="8" />
+                <TextBlock x:Name="DeploymentPercentText" Text="0%" Foreground="{StaticResource NeonCyanBrush}" FontSize="11" FontWeight="Bold" HorizontalAlignment="Right" Margin="0,7,0,0" />
+              </StackPanel>
+            </Border>
+          </Border>
+        </Grid>
+      </Grid>
+    </Grid>
+  </Grid>
+</Window>
