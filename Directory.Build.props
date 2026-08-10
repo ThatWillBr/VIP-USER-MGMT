@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <!-- Google Drive blocks the SDK's memory-mapped app-host update. Build locally. -->
+    <BaseIntermediateOutputPath>$(LOCALAPPDATA)\VIP1132Build\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <MSBuildProjectExtensionsPath>$(LOCALAPPDATA)\VIP1132Build\obj\$(MSBuildProjectName)\</MSBuildProjectExtensionsPath>
+    <BaseOutputPath>$(LOCALAPPDATA)\VIP1132Build\bin\$(MSBuildProjectName)\</BaseOutputPath>
+  </PropertyGroup>
+</Project>

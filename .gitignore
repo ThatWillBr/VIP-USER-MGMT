@@ -1,0 +1,41 @@
+# Build & Binary Output Directories
+bin/
+obj/
+dist/
+build/
+*.exe
+*.dll
+*.iso
+*.img
+*.msi
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+
+# IDE / User-specific
+.vs/
+.vscode/
+.idea/
+*.user
+*.userosv
+*.suo
+*.userprefs
+*.sln.docstates
+
+# State & Log Files
+vip_state.json
+state.json
+*.log
+*.tmp
+*.temp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini

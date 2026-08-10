@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>VIP1132</AssemblyName>
+    <RootNamespace>VIP1132</RootNamespace>
+    <StartupObject>VIP1132.Program</StartupObject>
+    <Version>3.0.9</Version>
+    <FileVersion>3.0.9.0</FileVersion>
+    <Product>Will's VIP 1132 User Manager</Product>
+    <Title>Will's VIP 1132 User Manager</Title>
+    <AssemblyTitle>Will's VIP 1132 User Manager</AssemblyTitle>
+    <Company>WILL</Company>
+    <Copyright>Copyright © WILL 2026</Copyright>
+    <Description>Fast Windows user rotation and verified Zoom setup.</Description>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\..\assets\vip1132.ico</ApplicationIcon>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishSingleFile>false</PublishSingleFile>
+    <SelfContained>false</SelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="..\..\assets\vip1132-logo-black.png" Link="Assets\vip1132-logo-black.png" />
+    <Content Include="..\..\assets\setup-loop.mp4" Link="Assets\setup-loop.mp4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>
