@@ -81,7 +81,7 @@
                 <TextBlock.Effect><DropShadowEffect Color="#52F6FF" BlurRadius="9" ShadowDepth="0" Opacity="0.45" /></TextBlock.Effect>
               </TextBlock>
               <Border Background="#291F2736" BorderBrush="#5BFFFFFF" BorderThickness="1" CornerRadius="9" Padding="8,3" Margin="12,0,0,0" VerticalAlignment="Center">
-                <TextBlock Text="v3.0.9" Foreground="#FFC6D3E8" FontSize="10" FontWeight="Bold" />
+                <TextBlock Text="v3.0.10" Foreground="#FFC6D3E8" FontSize="10" FontWeight="Bold" />
               </Border>
             </StackPanel>
             <TextBlock Text="ZOOM DEPLOYMENT CONSOLE  /  USER ROTATION SYSTEM" Style="{StaticResource MicroLabel}" Margin="1,5,0,0" />
@@ -130,8 +130,13 @@
                   <ProgressBar x:Name="SetupProgress" Style="{StaticResource NeonProgress}" Minimum="0" Maximum="100" Value="0" />
                   <TextBlock x:Name="ProgressText" Text="All systems ready" Foreground="#FF8093AF" FontSize="11" Margin="0,8,0,0" />
                 </StackPanel>
-                <Button x:Name="RunAllButton" Grid.Column="1" Style="{StaticResource PrimaryGlassButton}" Click="RunAllButton_Click"
-                        MinWidth="210" Content="⚡  RUN FULL SETUP" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                  <Button x:Name="RunAllButton" Style="{StaticResource PrimaryGlassButton}" Click="RunAllButton_Click"
+                          MinWidth="210" Content="⚡  RUN FULL SETUP" />
+                  <Button Style="{StaticResource GlassButton}" Click="InstructionsButton_Click"
+                          MinWidth="210" Margin="0,10,0,0" Padding="17,10" FontSize="12"
+                          Content="ⓘ  INSTRUCTIONS" />
+                </StackPanel>
               </Grid>
             </Border>
           </Border>

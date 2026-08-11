@@ -35,6 +35,18 @@ state.json
 *.tmp
 *.temp
 
+# Secrets & Local Deployment Configuration
+.env
+.env.*
+!.env.example
+secrets.json
+*.secrets.json
+credentials*.json
+*.pfx
+*.p12
+*.pem
+*.key
+
 # OS generated files
 .DS_Store
 Thumbs.db
