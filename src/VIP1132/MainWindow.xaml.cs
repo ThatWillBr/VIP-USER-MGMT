@@ -353,6 +353,15 @@ public partial class MainWindow : Window
 
     private void OpenDownloadsButton_Click(object sender, RoutedEventArgs e) => _zoom.OpenDownloads();
 
+    private void InstructionsButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new InstructionsWindow
+        {
+            Owner = this
+        };
+        dialog.ShowDialog();
+    }
+
     private void ProfileDetailsButton_Click(object sender, RoutedEventArgs e)
     {
         MessageBox.Show(
