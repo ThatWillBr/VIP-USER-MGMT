@@ -39,11 +39,4 @@ public sealed class StateService
             await JsonSerializer.SerializeAsync(stream, state, JsonOptions);
         File.Move(temp, StatePath, true);
     }
-
-    public string NewHelperReportPath()
-    {
-        var sharedDirectory = Path.Combine(DataDirectory, "Reports");
-        Directory.CreateDirectory(sharedDirectory);
-        return Path.Combine(sharedDirectory, $"zoom-profile-{Guid.NewGuid():N}.json");
-    }
 }

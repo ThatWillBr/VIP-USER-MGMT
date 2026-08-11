@@ -218,7 +218,7 @@ public partial class MainWindow : Window
         var old = _state.CurrentUsername ?? "none";
         var answer = MessageBox.Show(
             $"This will close and clean Zoom, delete managed user {old}, create user {next} (password {next}), " +
-            "install Zoom, apply dark mode only, and open Zoom as the new user.\n\nContinue?",
+            "install Zoom, and open Zoom as the new user.\n\nContinue?",
             "Run full VIP 1132 setup",
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
@@ -245,14 +245,12 @@ public partial class MainWindow : Window
                 ShowDeploymentOverlay(false);
                 if (outcome.Result.Success)
                 {
-                    var suffix = outcome.Result.HasWarnings
-                        ? " Zoom is open, but review the yellow warnings in Activity."
-                        : " Zoom is open and dark mode was verified.";
                     MessageBox.Show(
-                        $"User: {_state.CurrentUsername}\nPassword: {_state.CurrentUsername}\n\n{suffix}",
-                        outcome.Result.HasWarnings ? "Setup completed with warnings" : "Setup complete",
+                        $"User: {_state.CurrentUsername}\nPassword: {_state.CurrentUsername}\n\n" +
+                        "Zoom is open as the new Windows user. Setup is complete.",
+                        "Setup complete",
                         MessageBoxButton.OK,
-                        outcome.Result.HasWarnings ? MessageBoxImage.Warning : MessageBoxImage.Information);
+                        MessageBoxImage.Information);
                 }
                 else
                 {
@@ -362,14 +360,23 @@ public partial class MainWindow : Window
         dialog.ShowDialog();
     }
 
-    private void ProfileDetailsButton_Click(object sender, RoutedEventArgs e)
+    private void SupportVipButton_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show(
-            "General\n• Dark mode only\n\n" +
-            "VIP 1132 does not modify Zoom audio, video, meeting, or advanced settings.",
-            "Zoom dark mode profile",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        const string supportUrl = "https://pnpatvip.com";
+        Log("Opening pnpatvip.com...", LogLevel.Info);
+        try
+        {
+            Process.Start(new ProcessStartInfo(supportUrl) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            Log("Could not open pnpatvip.com: " + ex.Message, LogLevel.Error);
+            MessageBox.Show(
+                "Windows could not open pnpatvip.com in the default browser.",
+                "Support VIP",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
     }
 
     private async Task RunBusyAsync(Func<Task> action)
@@ -480,8 +487,8 @@ public partial class MainWindow : Window
         ActiveUserText.Text = _state.CurrentUsername is { } user ? $"User {user}" : "None yet";
         LastSetupText.Text = _state.LastSetupStatus;
         SequenceSummaryText.Text = _state.CurrentUsername is { } current
-            ? $"Replaces user {current} with the next numeric profile, installs Zoom, applies dark mode, and opens it visibly."
-            : "Creates the next numeric profile, installs Zoom, applies dark mode, and opens it visibly.";
+            ? $"Replaces user {current} with the next numeric profile, installs Zoom, and opens it visibly under that account."
+            : "Creates the next numeric profile, installs Zoom, and opens it visibly under that account.";
     }
 
     private void Log(string message, LogLevel level)

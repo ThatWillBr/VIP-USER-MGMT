@@ -125,7 +125,7 @@
                 <StackPanel Margin="0,0,32,0">
                   <TextBlock Text="FULL DEPLOYMENT" Style="{StaticResource MicroLabel}" Foreground="#FF8A9CB8" />
                   <TextBlock Text="Prepare the next Zoom profile" FontSize="24" FontWeight="SemiBold" Margin="0,5,0,0" />
-                  <TextBlock x:Name="SequenceSummaryText" Text="Creates the next user, installs Zoom, applies dark mode, and opens it visibly."
+                  <TextBlock x:Name="SequenceSummaryText" Text="Creates the next user, installs Zoom, and opens it visibly under that account."
                              Foreground="#FFADBCD1" FontSize="13" TextWrapping="Wrap" Margin="0,7,0,15" />
                   <ProgressBar x:Name="SetupProgress" Style="{StaticResource NeonProgress}" Minimum="0" Maximum="100" Value="0" />
                   <TextBlock x:Name="ProgressText" Text="All systems ready" Foreground="#FF8093AF" FontSize="11" Margin="0,8,0,0" />
@@ -161,13 +161,36 @@
             <Border Grid.Column="2" Style="{StaticResource GlassCard}">
               <StackPanel>
                 <DockPanel LastChildFill="False">
-                  <StackPanel DockPanel.Dock="Left"><TextBlock Text="ZOOM PROFILE" Style="{StaticResource MicroLabel}" /><TextBlock Text="Dark mode only" Foreground="{StaticResource TextMutedBrush}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
-                  <Border DockPanel.Dock="Right" Background="#CC0A2825" BorderBrush="#5B4CF0B5" BorderThickness="1" CornerRadius="8" Padding="8,4" Margin="12,0,0,0"><TextBlock Text="AUTO" Foreground="#FF7FF7D1" FontSize="10" FontWeight="Bold" /></Border>
+                  <StackPanel DockPanel.Dock="Left"><TextBlock Text="SUPPORT" Style="{StaticResource MicroLabel}" /><TextBlock Text="Keep VIP tools moving forward" Foreground="{StaticResource TextMutedBrush}" FontSize="12" Margin="0,5,0,0" /></StackPanel>
+                  <Border DockPanel.Dock="Right" Background="#CC2A2110" BorderBrush="#88FFD45D" BorderThickness="1" CornerRadius="8" Padding="8,4" Margin="12,0,0,0"><TextBlock Text="VIP" Foreground="#FFFFE9A0" FontSize="10" FontWeight="Bold" /></Border>
                 </DockPanel>
-                <WrapPanel Margin="0,17,0,12">
-                  <Border Background="#C7141B27" BorderBrush="#2FFFFFFF" BorderThickness="1" CornerRadius="8" Padding="9,6" Margin="0,0,7,7"><TextBlock Text="Dark mode" FontSize="11" /></Border>
-                </WrapPanel>
-                <Button Style="{StaticResource GlassButton}" Click="ProfileDetailsButton_Click" Content="View requested setting  →" HorizontalAlignment="Stretch" />
+                <Grid Margin="0,20,0,13">
+                  <Border Background="#33FFD45D" BorderBrush="#77FFD45D" BorderThickness="1" CornerRadius="8" Opacity="0.35" IsHitTestVisible="False">
+                    <Border.Effect><DropShadowEffect Color="#FFD45D" BlurRadius="22" ShadowDepth="0" Opacity="0.85" /></Border.Effect>
+                    <Border.Triggers>
+                      <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                        <BeginStoryboard>
+                          <Storyboard RepeatBehavior="Forever">
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.28" To="0.62" Duration="0:0:2.8" AutoReverse="True" />
+                          </Storyboard>
+                        </BeginStoryboard>
+                      </EventTrigger>
+                    </Border.Triggers>
+                  </Border>
+                  <Button x:Name="SupportVipButton" Style="{StaticResource GlassButton}" Click="SupportVipButton_Click" Height="46" Padding="17,10"
+                          Foreground="#FFFFF3C2" BorderBrush="#FFFFD45D" BorderThickness="1" FontSize="12" FontWeight="Bold"
+                          Cursor="Hand" Content="♥  SUPPORT VIP">
+                    <Button.Background>
+                      <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#D6533510" Offset="0" />
+                        <GradientStop Color="#C83B174E" Offset="0.54" />
+                        <GradientStop Color="#C82A124E" Offset="1" />
+                      </LinearGradientBrush>
+                    </Button.Background>
+                    <Button.Effect><DropShadowEffect Color="#A855F7" BlurRadius="12" ShadowDepth="0" Opacity="0.38" /></Button.Effect>
+                  </Button>
+                </Grid>
+                <TextBlock Text="pnpatvip.com" Foreground="#FF8799B3" FontSize="11" HorizontalAlignment="Center" />
               </StackPanel>
             </Border>
           </Grid>

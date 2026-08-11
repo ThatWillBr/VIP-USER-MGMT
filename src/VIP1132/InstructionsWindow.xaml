@@ -61,7 +61,7 @@
           </Border>
 
           <TextBlock Text="WHAT THE APP WILL DO" Style="{StaticResource MicroLabel}" Foreground="{StaticResource NeonPurpleBrush}" FontSize="12" />
-          <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="23" Foreground="#FFD5E1F1" Margin="0,9,0,24"><Run Text="1. Clean the existing Zoom installation and leftover Zoom files that may be causing Error 1132." /><LineBreak /><LineBreak /><Run Text="2. Create a NEW Windows user specifically for running Zoom." /><LineBreak /><LineBreak /><Run Text="3. Install a fresh copy of Zoom for the new Windows user." /><LineBreak /><LineBreak /><Run Text="4. When everything is ready, the app will show you the username and password/information you need to use the new Windows user." /></TextBlock>
+          <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="23" Foreground="#FFD5E1F1" Margin="0,9,0,24"><Run Text="1. Clean the existing Zoom installation and leftover Zoom files that may be causing Error 1132." /><LineBreak /><LineBreak /><Run Text="2. Create a NEW Windows user specifically for running Zoom." /><LineBreak /><LineBreak /><Run Text="3. Install a fresh copy of Zoom for the new Windows user." /><LineBreak /><LineBreak /><Run Text="4. Automatically open Zoom as the new Windows user, show the username and password, and finish. No Zoom settings are changed after launch." /></TextBlock>
 
           <Border Background="#ED160C24" BorderBrush="#A9FF3CCB" BorderThickness="1" CornerRadius="8" Padding="20,18" Margin="0,0,0,22">
             <Border.Effect><DropShadowEffect Color="#FF3CCB" BlurRadius="18" ShadowDepth="0" Opacity="0.2" /></Border.Effect>

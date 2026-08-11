@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
-using System.Text.Json;
+using System.Runtime.InteropServices;
 using VIP1132.Models;
 
 namespace VIP1132.Services;
@@ -22,26 +22,26 @@ public sealed class ZoomService
     public string ZoomMsiPath => Path.Combine(PublicDownloads, "ZoomInstallerFull.msi");
     public string CleanZoomZipPath => Path.Combine(PublicDownloads, "CleanZoom.zip");
 
-    public Task StopZoomAsync(CancellationToken cancellationToken = default)
+    public async Task StopZoomAsync(CancellationToken cancellationToken = default)
     {
-        return Task.Run(() =>
+        var names = new[] { "Zoom", "CptHost", "zCrashReport64", "ZoomOutlookMAPI", "ZoomAutoUpdate" };
+        var processes = names.SelectMany(Process.GetProcessesByName).ToList();
+        try
         {
-            var names = new[] { "Zoom", "CptHost", "zCrashReport64", "ZoomOutlookMAPI", "ZoomAutoUpdate" };
-            foreach (var name in names)
+            foreach (var process in processes)
             {
-                foreach (var process in Process.GetProcessesByName(name))
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    try
-                    {
-                        process.Kill(true);
-                        process.WaitForExit(5000);
-                    }
-                    catch { }
-                    finally { process.Dispose(); }
-                }
+                cancellationToken.ThrowIfCancellationRequested();
+                try { if (!process.HasExited) process.Kill(true); }
+                catch { }
             }
-        }, cancellationToken);
+
+            await Task.WhenAll(processes.Select(process => WaitForExitAsync(process, cancellationToken)));
+        }
+        finally
+        {
+            foreach (var process in processes)
+                process.Dispose();
+        }
     }
 
     public async Task<OperationResult> UninstallCleanlyAsync(
@@ -55,6 +55,8 @@ public sealed class ZoomService
             progress,
             CleanZoomCacheAge,
             minimumReusableBytes: 64 * 1024,
+            IsValidCleanZoomArchive,
+            "Zoom's CleanZoom download was not a valid ZIP archive.",
             cancellationToken);
 
         var extraction = Path.Combine(Path.GetTempPath(), "VIP1132", "CleanZoom", Guid.NewGuid().ToString("N"));
@@ -86,6 +88,8 @@ public sealed class ZoomService
             progress,
             ZoomInstallerCacheAge,
             minimumReusableBytes: 10 * 1024 * 1024,
+            IsValidZoomMsi,
+            "Zoom's installer download was not a valid Windows Installer package.",
             cancellationToken);
     }
 
@@ -114,72 +118,35 @@ public sealed class ZoomService
             : new OperationResult(false, "The installer finished, but Zoom.exe was not found.");
     }
 
-    public async Task<(OperationResult Result, ZoomProfileReport? Report)> ConfigureAndLaunchAsUserAsync(
+    public async Task<OperationResult> LaunchAsUserAsync(
         string username,
         string password,
-        string reportPath,
         CancellationToken cancellationToken = default)
     {
-        try { if (File.Exists(reportPath)) File.Delete(reportPath); } catch { }
+        var executable = FindZoomExecutable();
+        if (executable is null)
+            return new OperationResult(false, "Zoom.exe was not found after installation.");
 
-        var executable = PrepareHelperExecutable();
-        var helperPid = NativeSessionLauncher.LaunchAsUser(
-            username, password, executable, ["--zoom-helper", "--report", reportPath]);
-
-        using var helper = Process.GetProcessById(helperPid);
         try
         {
-            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeout.CancelAfter(TimeSpan.FromMinutes(2));
-            await helper.WaitForExitAsync(timeout.Token);
-        }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            return (new OperationResult(false, "Zoom configuration timed out."), null);
-        }
-        var helperExitCode = helper.ExitCode;
-
-        ZoomProfileReport? report = null;
-        try
-        {
-            if (File.Exists(reportPath))
-                report = JsonSerializer.Deserialize<ZoomProfileReport>(await File.ReadAllTextAsync(reportPath, cancellationToken));
+            NativeSessionLauncher.LaunchAsUser(username, password, executable, []);
         }
         catch (Exception ex)
         {
-            return (new OperationResult(false, "Could not read the Zoom dark mode report: " + ex.Message), null);
+            return new OperationResult(false, ex.Message);
         }
 
         var verifiedProcess = await WaitForZoomProcessAsUserAsync(
-            username, TimeSpan.FromSeconds(90), cancellationToken);
+            username, TimeSpan.FromSeconds(60), cancellationToken);
 
         if (verifiedProcess is null)
         {
-            var detail = report?.Error is { } error
-                ? " Helper reported: " + error
-                : helperExitCode != 0
-                    ? $" Helper exited with code {helperExitCode} (0x{helperExitCode:X8})."
-                    : "";
-            return (new OperationResult(false,
-                $"Zoom did not open visibly as {Environment.MachineName}\\{username}. The setup was not marked successful.{detail}"), report);
+            return new OperationResult(false,
+                $"Zoom did not open visibly as {Environment.MachineName}\\{username} within 60 seconds. The setup was not marked successful.");
         }
 
         verifiedProcess.Dispose();
-        if (report is null)
-        {
-            var detail = helperExitCode == 0
-                ? "the settings helper did not produce a verification report"
-                : $"the settings helper exited with code {helperExitCode} before producing a verification report";
-            return (new OperationResult(true, $"Zoom opened as {username}, but {detail}.", true), null);
-        }
-
-        var warnings = report.WarningCount > 0 || report.Error is not null;
-        var message = report.Error is not null
-            ? $"Zoom opened as {username}; dark mode helper reported: {report.Error}"
-            : warnings
-            ? $"Zoom opened as {username}; dark mode was checked with {report.WarningCount} warning(s)."
-            : $"Zoom opened as {username} with dark mode verified.";
-        return (new OperationResult(true, message, warnings), report);
+        return new OperationResult(true, $"Zoom opened visibly as {Environment.MachineName}\\{username}.");
     }
 
     public void OpenDownloads()
@@ -224,17 +191,17 @@ public sealed class ZoomService
             cancellationToken.ThrowIfCancellationRequested();
             foreach (var process in Process.GetProcessesByName("Zoom"))
             {
-                if (IsZoomProcessForUser(process, sessionId, username))
+                if (IsVisibleZoomProcessForUser(process, sessionId, username))
                     return process;
 
                 process.Dispose();
             }
-            await Task.Delay(1000, cancellationToken);
+            await Task.Delay(250, cancellationToken);
         }
         return null;
     }
 
-    private static bool IsZoomProcessForUser(Process process, int sessionId, string username)
+    private static bool IsVisibleZoomProcessForUser(Process process, int sessionId, string username)
     {
         try
         {
@@ -242,7 +209,11 @@ public sealed class ZoomService
                 return false;
 
             var owner = NativeSessionLauncher.TryGetProcessOwner(process);
-            return owner?.EndsWith("\\" + username, StringComparison.OrdinalIgnoreCase) == true;
+            if (owner?.EndsWith("\\" + username, StringComparison.OrdinalIgnoreCase) != true)
+                return false;
+
+            process.Refresh();
+            return process.MainWindowHandle != IntPtr.Zero;
         }
         catch
         {
@@ -250,63 +221,19 @@ public sealed class ZoomService
         }
     }
 
-    private static string PrepareHelperExecutable()
+    private static async Task WaitForExitAsync(Process process, CancellationToken cancellationToken)
     {
-        var executable = Environment.ProcessPath
-            ?? throw new InvalidOperationException("The VIP 1132 executable path is unavailable.");
-
-        if (IsSharedApplicationPath(executable))
-            return executable;
-
-        var sourceDirectory = Path.GetFullPath(AppContext.BaseDirectory);
-        var helperDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-            "VIP1132",
-            "Helper",
-            Guid.NewGuid().ToString("N"));
-        CopyDirectory(sourceDirectory, helperDirectory);
-
-        var helperExecutable = Path.Combine(helperDirectory, Path.GetFileName(executable));
-        if (!File.Exists(helperExecutable))
-            throw new InvalidOperationException("The staged Zoom helper executable could not be prepared.");
-
-        return helperExecutable;
-    }
-
-    private static bool IsSharedApplicationPath(string executable)
-    {
-        var path = Path.GetFullPath(executable);
-        var sharedRoots = new[]
+        try
         {
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-            Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments),
-            Path.Combine(Path.GetPathRoot(Environment.SystemDirectory) ?? "C:\\", "Users", "Public")
-        };
-
-        return sharedRoots
-            .Where(root => !string.IsNullOrWhiteSpace(root))
-            .Select(root => Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar)
-            .Any(root => path.StartsWith(root, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static void CopyDirectory(string sourceDirectory, string destinationDirectory)
-    {
-        Directory.CreateDirectory(destinationDirectory);
-        foreach (var directory in Directory.EnumerateDirectories(sourceDirectory, "*", SearchOption.AllDirectories))
-        {
-            var relative = Path.GetRelativePath(sourceDirectory, directory);
-            Directory.CreateDirectory(Path.Combine(destinationDirectory, relative));
+            if (process.HasExited)
+                return;
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeout.CancelAfter(TimeSpan.FromSeconds(5));
+            await process.WaitForExitAsync(timeout.Token);
         }
-
-        foreach (var file in Directory.EnumerateFiles(sourceDirectory, "*", SearchOption.AllDirectories))
-        {
-            var relative = Path.GetRelativePath(sourceDirectory, file);
-            var destination = Path.Combine(destinationDirectory, relative);
-            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-            File.Copy(file, destination, true);
-        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { }
+        catch (OperationCanceledException) { throw; }
+        catch { }
     }
 
     private static async Task DownloadAsync(
@@ -315,9 +242,11 @@ public sealed class ZoomService
         IProgress<double>? progress,
         TimeSpan cacheAge,
         long minimumReusableBytes,
+        Func<string, bool> validator,
+        string invalidDownloadMessage,
         CancellationToken cancellationToken)
     {
-        if (IsReusableDownload(destination, cacheAge, minimumReusableBytes))
+        if (IsReusableDownload(destination, cacheAge, minimumReusableBytes, validator))
         {
             progress?.Report(100);
             return;
@@ -362,6 +291,9 @@ public sealed class ZoomService
                 await target.FlushAsync(cancellationToken);
             }
 
+            if (!validator(temp))
+                throw new InvalidDataException(invalidDownloadMessage);
+
             File.Move(temp, destination, true);
             progress?.Report(100);
         }
@@ -371,14 +303,50 @@ public sealed class ZoomService
         }
     }
 
-    private static bool IsReusableDownload(string path, TimeSpan maximumAge, long minimumBytes)
+    private static bool IsReusableDownload(
+        string path,
+        TimeSpan maximumAge,
+        long minimumBytes,
+        Func<string, bool> validator)
     {
         try
         {
             var file = new FileInfo(path);
             return file.Exists
                    && file.Length >= minimumBytes
-                   && DateTime.UtcNow - file.LastWriteTimeUtc <= maximumAge;
+                   && DateTime.UtcNow - file.LastWriteTimeUtc <= maximumAge
+                   && validator(path);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool IsValidCleanZoomArchive(string path)
+    {
+        try
+        {
+            using var archive = ZipFile.OpenRead(path);
+            return archive.Entries.Any(entry =>
+                entry.Length > 0 &&
+                Path.GetFileName(entry.FullName).Equals("CleanZoom.exe", StringComparison.OrdinalIgnoreCase));
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool IsValidZoomMsi(string path)
+    {
+        try
+        {
+            var result = MsiOpenDatabase(path, IntPtr.Zero, out var database);
+            if (result != 0)
+                return false;
+            MsiCloseHandle(database);
+            return true;
         }
         catch
         {
@@ -392,4 +360,10 @@ public sealed class ZoomService
         client.DefaultRequestHeaders.UserAgent.ParseAdd("VIP1132/3.0");
         return client;
     }
+
+    [DllImport("msi.dll", CharSet = CharSet.Unicode)]
+    private static extern uint MsiOpenDatabase(string databasePath, IntPtr persist, out uint database);
+
+    [DllImport("msi.dll")]
+    private static extern uint MsiCloseHandle(uint handle);
 }

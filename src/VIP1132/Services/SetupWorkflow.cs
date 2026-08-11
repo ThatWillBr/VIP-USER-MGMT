@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using VIP1132.Models;
 
 namespace VIP1132.Services;
@@ -30,16 +31,16 @@ public sealed class SetupWorkflow
         return state;
     }
 
-    public async Task<(AppState State, ZoomProfileReport? Report, OperationResult Result)> RunFullSetupAsync(
+    public async Task<(AppState State, OperationResult Result)> RunFullSetupAsync(
         AppState state,
         IProgress<ProgressUpdate> progress,
         CancellationToken cancellationToken = default)
     {
-        ZoomProfileReport? report = null;
         Task? installerDownloadTask = null;
         CancellationTokenSource? installerDownloadCts = null;
         var progressSync = new object();
         var lastPercent = 0d;
+        var totalTimer = Stopwatch.StartNew();
 
         void Report(double percent, string step, string message, LogLevel level = LogLevel.Detail)
         {
@@ -53,32 +54,25 @@ public sealed class SetupWorkflow
 
         try
         {
-            var highest = await _users.HighestNumericUserAsync(cancellationToken) ?? 0;
+            var localUsers = await _users.ListUsersAsync(cancellationToken);
+            var knownUsers = localUsers.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var highest = localUsers
+                .Select(user => int.TryParse(user, out var number) ? number : 0)
+                .DefaultIfEmpty()
+                .Max();
             var baseline = Math.Max(highest, state.CurrentUserNumber ?? 0);
             var newNumber = baseline + 1;
-            while (await _users.ExistsAsync(newNumber.ToString(), cancellationToken))
+            while (knownUsers.Contains(newNumber.ToString()))
                 newNumber++;
             var username = newNumber.ToString();
             var password = username;
 
             Report(2.5, "Preflight", $"Preparing Windows user {username}.", LogLevel.Info);
-            Report(5.0, "Stop Zoom", "Closing all Zoom processes safely.");
-            await _zoom.StopZoomAsync(cancellationToken);
-
-            Report(8.0, "Remove Zoom", "Preparing Zoom's official CleanZoom utility.");
-            var cleanProgress = new Progress<double>(p => Report(
-                8.0 + p * 0.06,
-                "Remove Zoom",
-                p >= 100
-                    ? "CleanZoom is ready; removing the existing Zoom installation."
-                    : $"Downloading CleanZoom… {p:0.0}%"));
-            var clean = await _zoom.UninstallCleanlyAsync(cleanProgress, cancellationToken);
-            if (!clean.Success) throw new InvalidOperationException(clean.Message);
-            Report(23.0, "Remove Zoom", clean.Message, LogLevel.Success);
 
             var downloadSync = new object();
             var latestDownloadPercent = 0d;
             var publishDownloadProgress = false;
+            var downloadTimer = Stopwatch.StartNew();
             installerDownloadCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var downloadProgress = new Progress<double>(p =>
             {
@@ -90,25 +84,48 @@ public sealed class SetupWorkflow
                 }
 
                 if (publish)
-                    Report(47.0 + p * 0.20, "Download Zoom", $"Preparing Zoom Workplace… {p:0.0}%");
+                    Report(50.0 + p * 0.20, "Download Zoom", $"Preparing Zoom Workplace… {p:0.0}%");
             });
             installerDownloadTask = _zoom.DownloadInstallerAsync(downloadProgress, installerDownloadCts.Token);
 
-            if (state.CurrentUsername is { } oldUsername && await _users.ExistsAsync(oldUsername, cancellationToken))
+            var phaseTimer = Stopwatch.StartNew();
+            Report(5.0, "Stop Zoom", "Closing all Zoom processes safely.");
+            await _zoom.StopZoomAsync(cancellationToken);
+            Report(7.0, "Stop Zoom", $"Zoom processes closed in {FormatDuration(phaseTimer.Elapsed)}.", LogLevel.Success);
+
+            phaseTimer.Restart();
+            Report(8.0, "Remove Zoom", "Preparing Zoom's official CleanZoom utility.");
+            var cleanProgress = new Progress<double>(p => Report(
+                8.0 + p * 0.12,
+                "Remove Zoom",
+                p >= 100
+                    ? "CleanZoom is ready; removing the existing Zoom installation."
+                    : $"Downloading CleanZoom… {p:0.0}%"));
+            var clean = await _zoom.UninstallCleanlyAsync(cleanProgress, cancellationToken);
+            if (!clean.Success) throw new InvalidOperationException(clean.Message);
+            Report(25.0, "Remove Zoom", $"{clean.Message} ({FormatDuration(phaseTimer.Elapsed)})", LogLevel.Success);
+
+            // Surface an early background download failure before rotating Windows accounts.
+            if (installerDownloadTask.IsCompleted)
+                await installerDownloadTask;
+
+            if (state.CurrentUsername is { } oldUsername && knownUsers.Contains(oldUsername))
             {
-                Report(26.0, "Old user", $"Deleting Windows account {oldUsername}.");
+                phaseTimer.Restart();
+                Report(28.0, "Old user", $"Deleting Windows account {oldUsername}.");
                 var deleted = await _users.DeleteAsync(oldUsername, cancellationToken);
                 if (!deleted.Success)
-                    Report(33.0, "Old user", "Account deletion warning: " + deleted.BestMessage, LogLevel.Warning);
+                    Report(36.0, "Old user", "Account deletion warning: " + deleted.BestMessage, LogLevel.Warning);
                 else
-                    Report(33.0, "Old user", $"Windows account {oldUsername} deleted.", LogLevel.Success);
+                    Report(36.0, "Old user", $"Windows account {oldUsername} deleted in {FormatDuration(phaseTimer.Elapsed)}.", LogLevel.Success);
             }
             else
             {
-                Report(33.0, "Old user", "No previous managed account was present.");
+                Report(36.0, "Old user", "No previous managed account was present.");
             }
 
-            Report(36.0, "New user", $"Creating local administrator {username}.");
+            phaseTimer.Restart();
+            Report(40.0, "New user", $"Creating local administrator {username}.");
             var created = await _users.CreateAsync(username, password, cancellationToken);
             if (!created.Success) throw new InvalidOperationException("Could not create the new Windows user: " + created.BestMessage);
 
@@ -116,7 +133,7 @@ public sealed class SetupWorkflow
             state.LastAttemptUserNumber = newNumber;
             state.LastSetupStatus = "User created; Zoom setup in progress";
             await _stateService.SaveAsync(state);
-            Report(45.0, "New user", $"User {username} created and added to Administrators.", LogLevel.Success);
+            Report(48.0, "New user", $"User {username} created and added to Administrators in {FormatDuration(phaseTimer.Elapsed)}.", LogLevel.Success);
 
             double currentDownloadPercent;
             lock (downloadSync)
@@ -125,38 +142,31 @@ public sealed class SetupWorkflow
                 currentDownloadPercent = latestDownloadPercent;
             }
             Report(
-                47.0 + currentDownloadPercent * 0.20,
+                50.0 + currentDownloadPercent * 0.20,
                 "Download Zoom",
                 $"Preparing Zoom Workplace… {currentDownloadPercent:0.0}%");
+            phaseTimer.Restart();
             await installerDownloadTask;
-            Report(68.0, "Download Zoom", "Current 64-bit Zoom MSI is ready.", LogLevel.Success);
+            Report(70.0, "Download Zoom",
+                $"Current 64-bit Zoom MSI is ready after {FormatDuration(downloadTimer.Elapsed)}; final wait was {FormatDuration(phaseTimer.Elapsed)}.",
+                LogLevel.Success);
 
-            Report(71.0, "Install Zoom", "Installing Zoom for all Windows users.");
+            phaseTimer.Restart();
+            Report(73.0, "Install Zoom", "Installing Zoom for all Windows users.");
             var installed = await _zoom.InstallAsync(cancellationToken);
             if (!installed.Success) throw new InvalidOperationException(installed.Message);
-            Report(84.0, "Install Zoom", installed.Message, LogLevel.Success);
+            Report(88.0, "Install Zoom", $"{installed.Message} ({FormatDuration(phaseTimer.Elapsed)})", LogLevel.Success);
 
-            Report(87.0, "Apply dark mode", "Opening Zoom interactively as the new user and applying dark mode only.");
-            var reportPath = _stateService.NewHelperReportPath();
-            var configured = await _zoom.ConfigureAndLaunchAsUserAsync(username, password, reportPath, cancellationToken);
-            report = configured.Report;
-            if (!configured.Result.Success) throw new InvalidOperationException(configured.Result.Message);
+            phaseTimer.Restart();
+            Report(91.0, "Launch Zoom", $"Opening Zoom as {Environment.MachineName}\\{username}.");
+            var launched = await _zoom.LaunchAsUserAsync(username, password, cancellationToken);
+            if (!launched.Success) throw new InvalidOperationException(launched.Message);
 
-            if (report is not null)
-            {
-                foreach (var warning in report.Settings.Where(x =>
-                             x.Status is ZoomSettingStatus.Unavailable or ZoomSettingStatus.Failed))
-                {
-                    Report(97.0, "Apply dark mode",
-                        $"{warning.Setting}: {warning.Detail ?? warning.Status.ToString()}", LogLevel.Warning);
-                }
-            }
-
-            state.LastSetupStatus = configured.Result.HasWarnings ? "Completed with settings warnings" : "Completed";
+            state.LastSetupStatus = "Completed";
             await _stateService.SaveAsync(state);
-            Report(100.0, "Complete", configured.Result.Message,
-                configured.Result.HasWarnings ? LogLevel.Warning : LogLevel.Success);
-            return (state, report, configured.Result);
+            var completion = $"{launched.Message} Setup completed in {FormatDuration(totalTimer.Elapsed)}.";
+            Report(100.0, "Complete", completion, LogLevel.Success);
+            return (state, new OperationResult(true, completion));
         }
         catch (Exception ex)
         {
@@ -170,12 +180,19 @@ public sealed class SetupWorkflow
 
             state.LastSetupStatus = "Failed: " + ex.Message;
             await _stateService.SaveAsync(state);
-            Report(lastPercent, "Stopped", ex.Message, LogLevel.Error);
-            return (state, report, new OperationResult(false, ex.Message));
+            Report(lastPercent, "Stopped", $"{ex.Message} Stopped after {FormatDuration(totalTimer.Elapsed)}.", LogLevel.Error);
+            return (state, new OperationResult(false, ex.Message));
         }
         finally
         {
             installerDownloadCts?.Dispose();
         }
+    }
+
+    private static string FormatDuration(TimeSpan elapsed)
+    {
+        return elapsed.TotalMinutes >= 1
+            ? $"{(int)elapsed.TotalMinutes}m {elapsed.Seconds:00}s"
+            : $"{elapsed.TotalSeconds:0.0}s";
     }
 }

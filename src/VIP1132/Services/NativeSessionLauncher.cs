@@ -4,14 +4,11 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using System.Text;
 
 namespace VIP1132.Services;
 
 public static class NativeSessionLauncher
 {
-    private const int LogonWithProfile = 0x00000001;
-    private const uint CreateUnicodeEnvironment = 0x00000400;
     private const int DaclSecurityInformation = 0x00000004;
     private const int WinstaAllAccess = 0x000F037F;
     private const int DesktopAllAccess = 0x000F01FF;
@@ -36,7 +33,7 @@ public static class NativeSessionLauncher
         try
         {
             var process = Process.Start(startInfo)
-                ?? throw new Win32Exception("Windows did not return a process for the Zoom helper.");
+                ?? throw new Win32Exception("Windows did not return a Zoom process.");
             var pid = process.Id;
             process.Dispose();
             return pid;
@@ -44,7 +41,7 @@ public static class NativeSessionLauncher
         catch (Win32Exception ex)
         {
             throw new Win32Exception(ex.NativeErrorCode,
-                $"Windows could not start the Zoom helper as {Environment.MachineName}\\{username}: {ex.Message}");
+                $"Windows could not start Zoom as {Environment.MachineName}\\{username}: {ex.Message}");
         }
     }
 
@@ -70,8 +67,6 @@ public static class NativeSessionLauncher
             return null;
         }
     }
-
-    private static string Quote(string value) => "\"" + value.Replace("\"", "\\\"") + "\"";
 
     private static void GrantInteractiveDesktopAccess(string username)
     {
@@ -132,53 +127,6 @@ public static class NativeSessionLauncher
             Marshal.FreeHGlobal(descriptorBuffer);
         }
     }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    private struct StartupInfo
-    {
-        public int cb;
-        public string? lpReserved;
-        public string? lpDesktop;
-        public string? lpTitle;
-        public int dwX;
-        public int dwY;
-        public int dwXSize;
-        public int dwYSize;
-        public int dwXCountChars;
-        public int dwYCountChars;
-        public int dwFillAttribute;
-        public int dwFlags;
-        public short wShowWindow;
-        public short cbReserved2;
-        public IntPtr lpReserved2;
-        public IntPtr hStdInput;
-        public IntPtr hStdOutput;
-        public IntPtr hStdError;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct ProcessInformation
-    {
-        public IntPtr hProcess;
-        public IntPtr hThread;
-        public uint dwProcessId;
-        public uint dwThreadId;
-    }
-
-    [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool CreateProcessWithLogonW(
-        string lpUsername,
-        string? lpDomain,
-        string lpPassword,
-        int dwLogonFlags,
-        string? lpApplicationName,
-        StringBuilder lpCommandLine,
-        uint dwCreationFlags,
-        IntPtr lpEnvironment,
-        string? lpCurrentDirectory,
-        ref StartupInfo lpStartupInfo,
-        out ProcessInformation lpProcessInformation);
 
     [DllImport("advapi32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]

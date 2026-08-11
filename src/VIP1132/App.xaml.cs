@@ -8,17 +8,8 @@ namespace VIP1132;
 
 public partial class App : Application
 {
-    protected override async void OnStartup(StartupEventArgs e)
+    protected override void OnStartup(StartupEventArgs e)
     {
-        if (e.Args.Contains("--zoom-helper", StringComparer.OrdinalIgnoreCase))
-        {
-            ShutdownMode = ShutdownMode.OnExplicitShutdown;
-            var reportPath = GetArgument(e.Args, "--report");
-            var exitCode = await ZoomHelper.RunAsync(reportPath);
-            Shutdown(exitCode);
-            return;
-        }
-
         base.OnStartup(e);
 
         var previewMode = e.Args.Contains("--preview", StringComparer.OrdinalIgnoreCase);
@@ -52,16 +43,6 @@ public partial class App : Application
         var window = new MainWindow();
         MainWindow = window;
         window.Show();
-    }
-
-    private static string? GetArgument(IReadOnlyList<string> args, string name)
-    {
-        for (var i = 0; i < args.Count - 1; i++)
-        {
-            if (args[i].Equals(name, StringComparison.OrdinalIgnoreCase))
-                return args[i + 1];
-        }
-        return null;
     }
 
     public static bool IsAdministrator()
