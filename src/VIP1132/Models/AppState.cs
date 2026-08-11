@@ -21,4 +21,4 @@ public enum LogLevel
 
 public sealed record ProgressUpdate(double Percent, string Step, string Message, LogLevel Level = LogLevel.Detail);
 
-public sealed record OperationResult(bool Success, string Message, bool HasWarnings = false);
+public sealed record OperationResult(bool Success, string Message);

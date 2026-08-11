@@ -12,18 +12,17 @@ The full setup:
 2. Runs Zoom's official CleanZoom tool.
 3. Deletes the previous managed numeric Windows account.
 4. Creates the next numeric local administrator (the password matches the username, preserving the original workflow).
-5. Downloads and installs the latest 64-bit Zoom Workplace MSI for all users.
+5. Validates, downloads, and installs the latest 64-bit Zoom Workplace MSI for all users.
 6. Opens Zoom interactively as the new Windows user.
-7. Applies and verifies Zoom dark mode through Zoom's accessibility controls.
-8. Reports success only after a Zoom process is visible in the current desktop session and owned by the new user.
+7. Reports success only after a visible Zoom window is running in the current desktop session and owned by the new user.
 
 State is stored in `C:\ProgramData\VIP1132\state.json`. Existing numeric local users are detected automatically on first launch, so the rebuilt app continues from the old sequence instead of starting again at user 1.
 
-## Zoom profile
+The app does not automate Zoom's appearance, audio, video, meeting, or advanced settings. Once Zoom opens visibly as the new Windows user, setup is complete.
 
-The profile intentionally applies dark mode only. Audio, video, meeting, and advanced Zoom settings are left untouched.
+The Zoom MSI download begins during cleanup and user preparation. Cached CleanZoom and Zoom installer files are reused only while fresh and after their archive/package structure validates successfully. Major workflow phases log their elapsed time so real installations can be profiled without adding fixed delays.
 
-VIP 1132 does not pass Zoom audio policy keys during MSI installation. Dark mode is applied after Zoom opens by accessible control name; if a future Zoom release renames or removes that control, setup completes with a visible warning.
+The SUPPORT VIP control opens `https://pnpatvip.com` through the normal Windows default-browser mechanism and sends no app or user data.
 
 ## Build
 
