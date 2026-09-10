@@ -14,13 +14,16 @@ The full setup:
 4. Creates the next numeric local administrator (the password matches the username, preserving the original workflow).
 5. Validates, downloads, and installs the latest 64-bit Zoom Workplace MSI for all users.
 6. Opens Zoom interactively as the new Windows user.
-7. Reports success only after a visible Zoom window is running in the current desktop session and owned by the new user.
+7. Creates and verifies **Zoom - VIP 1132** on the shared Windows desktop, using Zoom.exe’s own icon. Each completed setup refreshes this shortcut for the new account.
+8. Reports success only after a visible Zoom window is running in the current desktop session and owned by the new user, and the shortcut has been saved and checked.
+
+After setup, double-click **Zoom - VIP 1132** to open Zoom as the managed user without Shift/right-click, password entry, or setup elevation. The shortcut calls a launch-only mode of the installed app and contains the account name and SID, not a saved password. It uses the existing numeric-password convention in memory. An outdated shortcut refuses to launch a deleted or replaced account. Keep the app installed (or keep a portable copy in the same location) so its shortcut continues to work.
 
 State is stored in `C:\ProgramData\VIP1132\state.json`. Existing numeric local users are detected automatically on first launch, so the rebuilt app continues from the old sequence instead of starting again at user 1.
 
 The app does not automate Zoom's appearance, audio, video, meeting, or advanced settings. Once Zoom opens visibly as the new Windows user, setup is complete.
 
-The Zoom MSI download begins during cleanup and user preparation. Cached CleanZoom and Zoom installer files are reused only while fresh and after their archive/package structure validates successfully. Major workflow phases log their elapsed time so real installations can be profiled without adding fixed delays.
+Both downloads begin before Zoom shutdown. After cleanup and installer validation, MSI installation and account preparation run concurrently. Account creation uses the native Windows API instead of starting two net.exe commands and PowerShell; password-policy errors are no longer silently ignored. Cached CleanZoom and Zoom installer files are reused only while fresh and after their archive/package structure validates successfully. Major workflow phases log their elapsed time so real installations can be profiled without adding fixed delays.
 
 The SUPPORT VIP control opens `https://pnpatvip.com` through the normal Windows default-browser mechanism and sends no app or user data.
 
@@ -42,7 +45,7 @@ Run:
 
 Outputs:
 
-- `dist\VIP1132-Setup-3.0.10.exe` — self-contained installer; no separate .NET install required.
+- `dist\VIP1132-Setup-3.0.11.exe` — self-contained installer; no separate .NET install required.
 - `dist\VIP1132-portable\` — much smaller framework-dependent build for PCs that already have the .NET 8 Desktop Runtime.
 
 ## Security and signing

@@ -22,20 +22,26 @@ $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
 
 Write-Host 'Restoring and compiling...'
 & $dotnet restore $project
+if ($LASTEXITCODE -ne 0) { throw 'App restore failed.' }
 & $dotnet build $project -c Release --no-restore
+if ($LASTEXITCODE -ne 0) { throw 'App build failed.' }
 & $dotnet restore $videoHostProject
+if ($LASTEXITCODE -ne 0) { throw 'Installer video host restore failed.' }
 & $dotnet build $videoHostProject -c Release --no-restore
+if ($LASTEXITCODE -ne 0) { throw 'Installer video host build failed.' }
 $videoHostExe = Join-Path $buildRoot 'bin\InstallerVideoHost\Release\net48\VIP1132.InstallerVisual.exe'
 if (-not (Test-Path -LiteralPath $videoHostExe)) { throw "Installer video host was not built: $videoHostExe" }
 
 Write-Host 'Publishing self-contained installer payload...'
 & $dotnet publish $project -c Release -r win-x64 --self-contained true `
     -p:PublishSingleFile=false -p:PublishReadyToRun=true -p:DebugType=None -p:DebugSymbols=false -o $publishDir
+if ($LASTEXITCODE -ne 0) { throw 'Self-contained publishing failed.' }
 Get-ChildItem -LiteralPath $publishDir -Filter '*.pdb' -File -Recurse -ErrorAction SilentlyContinue | Remove-Item -Force
 
 Write-Host 'Publishing small portable build (requires .NET 8 Desktop Runtime)...'
 & $dotnet publish $project -c Release -r win-x64 --self-contained false `
     -p:PublishSingleFile=false -p:DebugType=None -p:DebugSymbols=false -o $portableBuild
+if ($LASTEXITCODE -ne 0) { throw 'Portable publishing failed.' }
 Get-ChildItem -LiteralPath $portableBuild -Filter '*.pdb' -File -Recurse -ErrorAction SilentlyContinue | Remove-Item -Force
 
 New-Item -ItemType Directory -Force -Path $dist | Out-Null
@@ -60,6 +66,7 @@ if (-not $SkipInstaller) {
     Write-Host 'Compiling installer...'
     & $iscc "/DPublishDir=$publishDir" "/DDistDir=$dist" "/DVideoHost=$videoHostExe" `
         "/DSetupVideo=$(Join-Path $root 'assets\setup-loop.mp4')" (Join-Path $root 'installer\VIP1132.iss')
+    if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed.' }
     Get-ChildItem -LiteralPath $dist -Filter '*.tmp' -File -ErrorAction SilentlyContinue | Remove-Item -Force
 }
 

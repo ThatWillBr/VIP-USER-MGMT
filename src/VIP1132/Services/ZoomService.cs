@@ -44,12 +44,12 @@ public sealed class ZoomService
         }
     }
 
-    public async Task<OperationResult> UninstallCleanlyAsync(
+    public Task PrepareCleanZoomAsync(
         IProgress<double>? progress = null,
         CancellationToken cancellationToken = default)
     {
         Directory.CreateDirectory(PublicDownloads);
-        await DownloadAsync(
+        return DownloadAsync(
             CleanZoomUrl,
             CleanZoomZipPath,
             progress,
@@ -58,6 +58,13 @@ public sealed class ZoomService
             IsValidCleanZoomArchive,
             "Zoom's CleanZoom download was not a valid ZIP archive.",
             cancellationToken);
+    }
+
+    public async Task<OperationResult> UninstallCleanlyAsync(
+        IProgress<double>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        await PrepareCleanZoomAsync(progress, cancellationToken);
 
         var extraction = Path.Combine(Path.GetTempPath(), "VIP1132", "CleanZoom", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(extraction);
@@ -109,7 +116,7 @@ public sealed class ZoomService
             ],
             TimeSpan.FromMinutes(6), cancellationToken);
 
-        if (!result.Success)
+        if (result.ExitCode is not (0 or 3010))
             return new OperationResult(false, "Zoom installation failed: " + result.BestMessage);
 
         var executable = await WaitForZoomExecutableAsync(TimeSpan.FromSeconds(30), cancellationToken);
@@ -129,24 +136,28 @@ public sealed class ZoomService
 
         try
         {
-            NativeSessionLauncher.LaunchAsUser(username, password, executable, []);
+            // Do not create a second instance when the shortcut is double-clicked again.
+            using var existing = FindVisibleZoomProcessAsUser(username);
+            if (existing is not null)
+            {
+                NativeSessionLauncher.ShowZoomWindow(existing);
+                return new OperationResult(true, "Zoom is already open as the managed Windows user.");
+            }
+            // Retain the handle returned by Windows: it grants access to verify the new
+            // process even when a non-elevated shortcut cannot reopen another user's process.
+            using var launched = NativeSessionLauncher.LaunchAsUser(username, password, executable, []);
+            var verified = await WaitForZoomProcessAsUserAsync(
+                username, launched, TimeSpan.FromSeconds(60), cancellationToken);
+            return verified
+                ? new OperationResult(true, $"Zoom opened visibly as {Environment.MachineName}\\{username}.")
+                : new OperationResult(false,
+                    $"Zoom did not open visibly as {Environment.MachineName}\\{username} within 60 seconds. Close Zoom and try the desktop shortcut again.");
         }
         catch (Exception ex)
         {
             return new OperationResult(false, ex.Message);
         }
 
-        var verifiedProcess = await WaitForZoomProcessAsUserAsync(
-            username, TimeSpan.FromSeconds(60), cancellationToken);
-
-        if (verifiedProcess is null)
-        {
-            return new OperationResult(false,
-                $"Zoom did not open visibly as {Environment.MachineName}\\{username} within 60 seconds. The setup was not marked successful.");
-        }
-
-        verifiedProcess.Dispose();
-        return new OperationResult(true, $"Zoom opened visibly as {Environment.MachineName}\\{username}.");
     }
 
     public void OpenDownloads()
@@ -179,26 +190,38 @@ public sealed class ZoomService
         return null;
     }
 
-    private static async Task<Process?> WaitForZoomProcessAsUserAsync(
+    private static async Task<bool> WaitForZoomProcessAsUserAsync(
         string username,
+        Process launched,
         TimeSpan timeout,
         CancellationToken cancellationToken)
     {
-        var sessionId = Process.GetCurrentProcess().SessionId;
+        using var current = Process.GetCurrentProcess();
         var until = DateTime.UtcNow + timeout;
         while (DateTime.UtcNow < until)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            foreach (var process in Process.GetProcessesByName("Zoom"))
-            {
-                if (IsVisibleZoomProcessForUser(process, sessionId, username))
-                    return process;
-
-                process.Dispose();
-            }
+            if (IsVisibleZoomProcessForUser(launched, current.SessionId, username)) return true;
+            using var process = FindVisibleZoomProcessAsUser(username);
+            if (process is not null) return true;
             await Task.Delay(250, cancellationToken);
         }
-        return null;
+        return false;
+    }
+
+    private static Process? FindVisibleZoomProcessAsUser(string username)
+    {
+        using var current = Process.GetCurrentProcess();
+        var processes = Process.GetProcessesByName("Zoom");
+        Process? found = null;
+        foreach (var process in processes)
+        {
+            if (found is null && IsVisibleZoomProcessForUser(process, current.SessionId, username))
+                found = process;
+            else
+                process.Dispose();
+        }
+        return found;
     }
 
     private static bool IsVisibleZoomProcessForUser(Process process, int sessionId, string username)

@@ -9,8 +9,8 @@
     <AssemblyName>VIP1132</AssemblyName>
     <RootNamespace>VIP1132</RootNamespace>
     <StartupObject>VIP1132.Program</StartupObject>
-    <Version>3.0.10</Version>
-    <FileVersion>3.0.10.0</FileVersion>
+    <Version>3.0.11</Version>
+    <FileVersion>3.0.11.0</FileVersion>
     <Product>Will's VIP 1132 User Manager</Product>
     <Title>Will's VIP 1132 User Manager</Title>
     <AssemblyTitle>Will's VIP 1132 User Manager</AssemblyTitle>
@@ -27,6 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="VIP1132.Tests" />
     <Resource Include="..\..\assets\vip1132-logo-black.png" Link="Assets\vip1132-logo-black.png" />
     <Content Include="..\..\assets\setup-loop.mp4" Link="Assets\setup-loop.mp4">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

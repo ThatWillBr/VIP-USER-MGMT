@@ -61,7 +61,7 @@
           </Border>
 
           <TextBlock Text="WHAT THE APP WILL DO" Style="{StaticResource MicroLabel}" Foreground="{StaticResource NeonPurpleBrush}" FontSize="12" />
-          <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="23" Foreground="#FFD5E1F1" Margin="0,9,0,24"><Run Text="1. Clean the existing Zoom installation and leftover Zoom files that may be causing Error 1132." /><LineBreak /><LineBreak /><Run Text="2. Create a NEW Windows user specifically for running Zoom." /><LineBreak /><LineBreak /><Run Text="3. Install a fresh copy of Zoom for the new Windows user." /><LineBreak /><LineBreak /><Run Text="4. Automatically open Zoom as the new Windows user, show the username and password, and finish. No Zoom settings are changed after launch." /></TextBlock>
+          <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="23" Foreground="#FFD5E1F1" Margin="0,9,0,24"><Run Text="1. Clean the existing Zoom installation and leftover Zoom files that may be causing Error 1132." /><LineBreak /><LineBreak /><Run Text="2. Create a NEW Windows user specifically for running Zoom." /><LineBreak /><LineBreak /><Run Text="3. Install a fresh copy of Zoom for the new Windows user." /><LineBreak /><LineBreak /><Run Text="4. Automatically open Zoom as the new Windows user, create the Zoom - VIP 1132 desktop shortcut, and finish. No Zoom settings are changed after launch." /></TextBlock>
 
           <Border Background="#ED160C24" BorderBrush="#A9FF3CCB" BorderThickness="1" CornerRadius="8" Padding="20,18" Margin="0,0,0,22">
             <Border.Effect><DropShadowEffect Color="#FF3CCB" BlurRadius="18" ShadowDepth="0" Opacity="0.2" /></Border.Effect>
@@ -80,27 +80,27 @@
 
               <Border Background="#FF02050A" BorderBrush="#FF52F6FF" BorderThickness="1" CornerRadius="7" Padding="16,14" Margin="0,0,0,17">
                 <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
-                  <TextBlock Text="SHIFT + RIGHT-CLICK  →  RUN AS DIFFERENT USER"
+                  <TextBlock Text="DOUBLE-CLICK  →  ZOOM - VIP 1132"
                              Foreground="White" FontSize="18" FontWeight="Bold" TextAlignment="Center">
                     <TextBlock.Effect><DropShadowEffect Color="#52F6FF" BlurRadius="13" ShadowDepth="0" Opacity="0.8" /></TextBlock.Effect>
                   </TextBlock>
                 </Viewbox>
               </Border>
 
-              <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="23" Foreground="#FFD9E6F5"><Run Text="1. Find the Zoom app or Zoom shortcut." /><LineBreak /><Run Text="2. HOLD DOWN the SHIFT key on your keyboard." /><LineBreak /><Run Text="3. While continuing to hold SHIFT, RIGHT-CLICK the Zoom shortcut." /><LineBreak /><Run Text="4. Select “Run as different user”." FontWeight="Bold" /><LineBreak /><Run Text="5. Windows will ask for a username and password." /><LineBreak /><Run Text="6. Enter the username and password for the new Windows user created by VIP 1132 Fix." /><LineBreak /><Run Text="7. Click OK." /><LineBreak /><Run Text="8. Zoom will open using the new Windows user." /></TextBlock>
+              <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="23" Foreground="#FFD9E6F5"><Run Text="1. Find Zoom - VIP 1132 on your desktop. It uses Zoom’s regular blue logo." /><LineBreak /><Run Text="2. Double-click it." FontWeight="Bold" /><LineBreak /><Run Text="3. Zoom opens as the Windows user created by VIP 1132. No password entry is needed." /></TextBlock>
 
-              <TextBlock Text="You must do this EVERY TIME you open Zoom after the first automatic launch. Do not simply double-click Zoom normally."
+              <TextBlock Text="Use Zoom - VIP 1132 each time. The regular Zoom shortcut opens Zoom under your usual Windows account."
                          Foreground="#FFFFD166" FontSize="13" FontWeight="Bold" TextWrapping="Wrap" Margin="0,16,0,0" />
             </StackPanel>
           </Border>
 
           <TextBlock Text="IMPORTANT" Style="{StaticResource MicroLabel}" Foreground="{StaticResource WarningBrush}" FontSize="12" />
-          <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="22" Foreground="#FFD5E1F1" Margin="0,9,0,24"><Run Text="Do not delete the new Windows user created by VIP 1132 Fix. Zoom needs to continue running under that Windows user for this setup to work." /><LineBreak /><LineBreak /><Run Text="Opening Zoom normally under your regular Windows account is NOT the same as opening it under the new user." /><LineBreak /><LineBreak /><Run Text="If you accidentally open Zoom normally, close it and reopen it using SHIFT + RIGHT-CLICK → Run as different user." FontWeight="Bold" /><LineBreak /><LineBreak /><Run Text="If you run VIP 1132 Fix again in the future, let the app finish the entire process before manually opening Zoom." /></TextBlock>
+          <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="22" Foreground="#FFD5E1F1" Margin="0,9,0,24"><Run Text="Do not delete the new Windows user created by VIP 1132 Fix. Zoom needs to continue running under that Windows user for this setup to work." /><LineBreak /><LineBreak /><Run Text="Opening Zoom normally under your regular Windows account is NOT the same as opening it under the new user." /><LineBreak /><LineBreak /><Run Text="If you accidentally open Zoom normally, close it and reopen it using double-click the Zoom - VIP 1132 desktop shortcut." FontWeight="Bold" /><LineBreak /><LineBreak /><Run Text="If you run VIP 1132 Fix again in the future, let the app finish the entire process before manually opening Zoom." /></TextBlock>
 
           <Border Background="#C80B1715" BorderBrush="#704CF0B5" BorderThickness="1" CornerRadius="8" Padding="18,16">
             <StackPanel>
               <TextBlock Text="THAT'S IT!" Foreground="{StaticResource SuccessBrush}" FontSize="16" FontWeight="Bold" />
-              <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="23" Margin="0,8,0,0"><Run Text="First run: VIP 1132 Fix opens Zoom automatically." /><LineBreak /><Run Text="Every time after that: SHIFT + RIGHT-CLICK → Run as different user." FontWeight="Bold" /><LineBreak /><LineBreak /><Run Text="No computer degree required." /></TextBlock>
+              <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="23" Margin="0,8,0,0"><Run Text="First run: VIP 1132 Fix opens Zoom automatically." /><LineBreak /><Run Text="Every time after that: double-click the Zoom - VIP 1132 desktop shortcut." FontWeight="Bold" /><LineBreak /><LineBreak /><Run Text="No computer degree required." /></TextBlock>
             </StackPanel>
           </Border>
         </StackPanel>

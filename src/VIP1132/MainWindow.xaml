@@ -81,7 +81,7 @@
                 <TextBlock.Effect><DropShadowEffect Color="#52F6FF" BlurRadius="9" ShadowDepth="0" Opacity="0.45" /></TextBlock.Effect>
               </TextBlock>
               <Border Background="#291F2736" BorderBrush="#5BFFFFFF" BorderThickness="1" CornerRadius="9" Padding="8,3" Margin="12,0,0,0" VerticalAlignment="Center">
-                <TextBlock Text="v3.0.10" Foreground="#FFC6D3E8" FontSize="10" FontWeight="Bold" />
+                <TextBlock Text="v3.0.11" Foreground="#FFC6D3E8" FontSize="10" FontWeight="Bold" />
               </Border>
             </StackPanel>
             <TextBlock Text="ZOOM DEPLOYMENT CONSOLE  /  USER ROTATION SYSTEM" Style="{StaticResource MicroLabel}" Margin="1,5,0,0" />
