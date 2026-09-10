@@ -247,7 +247,7 @@ public partial class MainWindow : Window
                 {
                     MessageBox.Show(
                         $"User: {_state.CurrentUsername}\nPassword: {_state.CurrentUsername}\n\n" +
-                        "Zoom is open as the new Windows user. Setup is complete.",
+                        "Zoom is open as the new Windows user.\n\nNext time, double-click Zoom - VIP 1132 on your desktop. The shortcut uses Zoom’s regular icon.",
                         "Setup complete",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);

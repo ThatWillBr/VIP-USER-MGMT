@@ -13,7 +13,15 @@ public static class NativeSessionLauncher
     private const int WinstaAllAccess = 0x000F037F;
     private const int DesktopAllAccess = 0x000F01FF;
 
-    public static int LaunchAsUser(string username, string password, string executable, IReadOnlyList<string> arguments)
+    public static void ShowZoomWindow(Process process)
+    {
+        var window = process.MainWindowHandle;
+        if (window == IntPtr.Zero) return;
+        if (IsIconic(window)) ShowWindowAsync(window, 9); // SW_RESTORE
+        SetForegroundWindow(window);
+    }
+
+    public static Process LaunchAsUser(string username, string password, string executable, IReadOnlyList<string> arguments)
     {
         GrantInteractiveDesktopAccess(username);
 
@@ -32,11 +40,8 @@ public static class NativeSessionLauncher
 
         try
         {
-            var process = Process.Start(startInfo)
+            return Process.Start(startInfo)
                 ?? throw new Win32Exception("Windows did not return a Zoom process.");
-            var pid = process.Id;
-            process.Dispose();
-            return pid;
         }
         catch (Win32Exception ex)
         {
@@ -135,6 +140,18 @@ public static class NativeSessionLauncher
     [DllImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool CloseHandle(IntPtr handle);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsIconic(IntPtr window);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool ShowWindowAsync(IntPtr window, int command);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetForegroundWindow(IntPtr window);
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern IntPtr GetProcessWindowStation();
