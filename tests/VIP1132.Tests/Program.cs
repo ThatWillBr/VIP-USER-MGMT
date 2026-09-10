@@ -3,6 +3,9 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using VIP1132.Services;
+using System.Security.Cryptography;
+using System.Windows;
+using System.Windows.Media.Imaging;
 
 internal static class Program
 {
@@ -15,6 +18,17 @@ internal static class Program
         Directory.CreateDirectory(folder);
         try
         {
+            _ = new Application();
+            foreach (var name in new[] { "vip1132-logo-black.png", "vip1132.ico" })
+            {
+                var resource = Application.GetResourceStream(new Uri($"pack://application:,,,/VIP1132;component/Assets/{name}"));
+                Check(resource is not null, $"WPF can resolve the embedded {name}");
+                using var embedded = resource!.Stream;
+                using var expected = File.OpenRead(Path.Combine(Directory.GetCurrentDirectory(), "assets", name));
+                Check(SHA256.HashData(embedded).SequenceEqual(SHA256.HashData(expected)), $"Embedded {name} matches the current artwork");
+                var bitmap = new BitmapImage(new Uri($"pack://application:,,,/VIP1132;component/Assets/{name}"));
+                Check(bitmap.PixelWidth > 0 && bitmap.PixelHeight > 0, $"WPF decodes {name}");
+            }
             var source = Path.Combine(AppContext.BaseDirectory, "VIP1132.exe");
             var target = Path.Combine(folder, "App with spaces.exe");
             File.Copy(source, target);
