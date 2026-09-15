@@ -1,8 +1,8 @@
 {
-  "version": "3.0.17",
-  "title": "VIP 1132 v3.0.17 is available",
-  "notes": "Silent updates no longer start the installation animation, and interactive installs close it after five minutes. Existing managed-user state and completed setup steps are preserved.",
-  "installerUrl": "https://pnpatvip.com/downloads/VIP1132-Setup-3.0.17.exe",
-  "portableUrl": "https://pnpatvip.com/downloads/VIP1132-Portable-3.0.17.zip",
-  "sha256": "F541A1D6C33C51B8FE8E1A796F68B837E389CE35162C03A1CBE2C5DDBDD7C0B6"
+  "version": "3.0.18",
+  "title": "VIP 1132 v3.0.18 is available",
+  "notes": "Fixes valid Zoom downloads being rejected as invalid MSI packages by closing the download file before Windows Installer validation. Updates preserve each machine's existing managed-user state.",
+  "installerUrl": "https://pnpatvip.com/downloads/VIP1132-Setup-3.0.18.exe",
+  "portableUrl": "https://pnpatvip.com/downloads/VIP1132-Portable-3.0.18.zip",
+  "sha256": "703A2C57B7B9EAF14976A0EC2A5CB88EE6888DBBFE3F8C1CE032473C6C54E9ED"
 }
