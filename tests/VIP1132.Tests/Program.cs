@@ -12,12 +12,13 @@ internal static class Program
     private static int _passed;
 
     [STAThread]
-    private static int Main()
+    private static int Main(string[] args)
     {
         var folder = Path.Combine(Path.GetTempPath(), "VIP1132 tests " + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(folder);
         try
         {
+            Task.Run(() => VerifyDownloadAsync(folder, args.Contains("--live-download"))).GetAwaiter().GetResult();
             _ = new Application();
             foreach (var name in new[] { "vip1132-logo-black.png", "vip1132.ico" })
             {
@@ -82,6 +83,59 @@ internal static class Program
         {
             // Only this invocation's explicitly created temporary directory.
             Directory.Delete(folder, true);
+        }
+    }
+
+    private static async Task VerifyDownloadAsync(string folder, bool live)
+    {
+        var payload = System.Text.Encoding.UTF8.GetBytes("Download validation must run after closing the writer.");
+        var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+        var serve = Task.Run(async () =>
+        {
+            using var client = await listener.AcceptTcpClientAsync(timeout.Token);
+            await using var stream = client.GetStream();
+            using var reader = new StreamReader(stream, leaveOpen: true);
+            while (!string.IsNullOrEmpty(await reader.ReadLineAsync(timeout.Token))) { }
+            var header = System.Text.Encoding.ASCII.GetBytes($"HTTP/1.1 200 OK\r\nContent-Length: {payload.Length}\r\nConnection: close\r\n\r\n");
+            await stream.WriteAsync(header, timeout.Token);
+            await stream.WriteAsync(payload, timeout.Token);
+        });
+        var destination = Path.Combine(folder, "download.bin");
+        File.WriteAllText(destination, "Previous cached file");
+        try
+        {
+            await ZoomService.DownloadAsync($"http://127.0.0.1:{port}/package", destination, null,
+                TimeSpan.Zero, 0, path =>
+                {
+                    using var validated = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
+                    using var data = new MemoryStream();
+                    validated.CopyTo(data);
+                    return data.ToArray().SequenceEqual(payload);
+                }, "Validation failed", timeout.Token);
+            await serve;
+            Check(File.ReadAllBytes(destination).SequenceEqual(payload), "Downloaded file can be reopened exclusively and replaces the cache");
+            Check(!File.Exists(destination + ".download"), "Successful download leaves no partial file");
+        }
+        finally
+        {
+            timeout.Cancel();
+            listener.Stop();
+            try { await serve; } catch (OperationCanceledException) { }
+        }
+        if (live)
+        {
+            using var liveTimeout = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            var msi = Path.Combine(folder, "ZoomInstallerFull.msi");
+            await ZoomService.DownloadAsync(ZoomService.ZoomMsiUrl, msi, null, TimeSpan.Zero,
+                10 * 1024 * 1024, ZoomService.IsValidZoomMsi, "Live MSI validation failed", liveTimeout.Token);
+            Check(ZoomService.IsValidZoomMsi(msi), "Live official Zoom download passes Windows Installer validation after closing the file");
+            using (var locked = new FileStream(msi, FileMode.Open, FileAccess.Read, FileShare.None))
+                Check(!ZoomService.IsValidZoomMsi(msi), "An exclusive file lock reproduces the previous false invalid-MSI result");
+            Check(ZoomService.IsValidZoomMsi(msi), "The same MSI validates again after releasing the exclusive lock");
+            Console.WriteLine($"Live Zoom MSI verified: {new FileInfo(msi).Length} bytes.");
         }
     }
 

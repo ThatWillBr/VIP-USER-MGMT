@@ -272,7 +272,7 @@ public sealed class ZoomService
         catch { }
     }
 
-    private static async Task DownloadAsync(
+    internal static async Task DownloadAsync(
         string url,
         string destination,
         IProgress<double>? progress,
@@ -301,38 +301,40 @@ public sealed class ZoomService
                     using var response = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, responseTimeout.Token);
                     response.EnsureSuccessStatusCode();
                     var total = response.Content.Headers.ContentLength;
-                    await using var source = await response.Content.ReadAsStreamAsync(cancellationToken);
-                    await using var target = new FileStream(temp, new FileStreamOptions
+                    await using (var source = await response.Content.ReadAsStreamAsync(cancellationToken))
+                    await using (var target = new FileStream(temp, new FileStreamOptions
                     {
                         Mode = FileMode.Create,
                         Access = FileAccess.Write,
                         Share = FileShare.None,
                         BufferSize = 1024 * 512,
                         Options = FileOptions.Asynchronous | FileOptions.SequentialScan
-                    });
-                    var buffer = new byte[1024 * 512];
-                    long received = 0;
-                    var lastPercent = -1d;
-                    while (true)
+                    }))
                     {
-                        using var readTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                        readTimeout.CancelAfter(DownloadReadTimeout);
-                        var read = await source.ReadAsync(buffer.AsMemory(), readTimeout.Token);
-                        if (read == 0) break;
-                        await target.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
-                        received += read;
-                        if (total is > 0)
+                        var buffer = new byte[1024 * 512];
+                        long received = 0;
+                        var lastPercent = -1d;
+                        while (true)
                         {
-                            var percent = Math.Round(Math.Min(100, received * 100d / total.Value), 1);
-                            if (percent >= lastPercent + 0.1 || percent >= 100)
+                            using var readTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                            readTimeout.CancelAfter(DownloadReadTimeout);
+                            var read = await source.ReadAsync(buffer.AsMemory(), readTimeout.Token);
+                            if (read == 0) break;
+                            await target.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
+                            received += read;
+                            if (total is > 0)
                             {
-                                progress?.Report(percent);
-                                lastPercent = percent;
+                                var percent = Math.Round(Math.Min(100, received * 100d / total.Value), 1);
+                                if (percent >= lastPercent + 0.1 || percent >= 100)
+                                {
+                                    progress?.Report(percent);
+                                    lastPercent = percent;
+                                }
                             }
                         }
-                    }
 
-                    await target.FlushAsync(cancellationToken);
+                        await target.FlushAsync(cancellationToken);
+                    }
                     if (!validator(temp))
                         throw new InvalidDataException(invalidDownloadMessage);
 
@@ -399,7 +401,7 @@ public sealed class ZoomService
         }
     }
 
-    private static bool IsValidZoomMsi(string path)
+    internal static bool IsValidZoomMsi(string path)
     {
         try
         {
