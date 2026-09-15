@@ -1,6 +1,8 @@
 using Microsoft.Win32;
 using System.IO;
+using System.Security;
 using System.Security.Principal;
+using System.Text.RegularExpressions;
 using VIP1132.Models;
 
 namespace VIP1132.Services;
@@ -13,6 +15,7 @@ namespace VIP1132.Services;
 public sealed class UserProfileReadinessService
 {
     private const string ProfileListPath = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList";
+    private static readonly Regex ManagedProfileName = new(@"^(?<username>\d+)(?:\..+)?$", RegexOptions.CultureInvariant);
     private static readonly string UserProfilesRoot = Path.GetDirectoryName(
         Environment.GetFolderPath(Environment.SpecialFolder.UserProfile))
         ?? throw new InvalidOperationException("Windows did not provide the user-profile root directory.");
@@ -62,6 +65,51 @@ public sealed class UserProfileReadinessService
         }
     }
 
+    /// <summary>
+    /// A deleted local account leaves its ProfileList entry behind. Reusing that numeric name then
+    /// makes Windows select an old SID or create a suffixed temporary profile. Preserve any folder
+    /// and remove only entries whose numeric account no longer exists and whose hive is unloaded.
+    /// </summary>
+    public OperationResult RepairOrphanedProfiles(IEnumerable<string> existingUsernames)
+    {
+        var existing = existingUsernames.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        using var profileList = Registry.LocalMachine.OpenSubKey(ProfileListPath, writable: true);
+        if (profileList is null)
+            return new OperationResult(false, "Windows ProfileList could not be opened for profile recovery.");
+
+        var candidates = profileList.GetSubKeyNames()
+            .Select(sid => ReadOrphanedProfile(profileList, sid, existing))
+            .Where(candidate => candidate is not null)
+            .Cast<OrphanedProfile>()
+            .ToArray();
+        if (candidates.Length == 0)
+            return new OperationResult(true, "No orphaned VIP numeric profiles were found.");
+
+        try
+        {
+            Directory.CreateDirectory(_recoveryRoot);
+            foreach (var candidate in candidates)
+            {
+                using var loadedHive = Registry.Users.OpenSubKey(candidate.Sid);
+                if (loadedHive is not null)
+                    return new OperationResult(false,
+                        $"Windows still has the old profile hive for SID {candidate.Sid} loaded. Sign out that user before retrying; no profile data was removed.");
+
+                var preservedPath = PreserveProfileDirectory(candidate.Path, candidate.Username, candidate.Sid);
+                profileList.DeleteSubKeyTree(candidate.Sid, throwOnMissingSubKey: false);
+                WriteRecoveryRecord(candidate, preservedPath);
+            }
+
+            return new OperationResult(true,
+                $"Preserved and cleared {candidates.Length} orphaned VIP Windows profile registration(s) before reusing numeric account names.");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException)
+        {
+            return new OperationResult(false,
+                $"Could not safely preserve an orphaned VIP Windows profile: {ex.Message}");
+        }
+    }
+
     public OperationResult VerifyRegisteredProfile(string username)
     {
         var sid = GetUserSid(username);
@@ -79,6 +127,48 @@ public sealed class UserProfileReadinessService
         ((SecurityIdentifier)new NTAccount(Environment.MachineName, username)
             .Translate(typeof(SecurityIdentifier))).Value;
 
+    private OrphanedProfile? ReadOrphanedProfile(RegistryKey profileList, string sid, IReadOnlySet<string> existingUsernames)
+    {
+        using var profileKey = profileList.OpenSubKey(sid);
+        var path = profileKey?.GetValue("ProfileImagePath") as string;
+        if (!TryGetManagedUsername(path, out var username) || existingUsernames.Contains(username))
+            return null;
+        return new OrphanedProfile(sid, username, path!);
+    }
+
+    private static bool TryGetManagedUsername(string? profilePath, out string username)
+    {
+        username = string.Empty;
+        if (string.IsNullOrWhiteSpace(profilePath)) return false;
+        var normalized = Path.GetFullPath(profilePath);
+        if (!normalized.StartsWith(UserProfilesRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            return false;
+        var match = ManagedProfileName.Match(Path.GetFileName(normalized));
+        if (!match.Success) return false;
+        username = match.Groups["username"].Value;
+        return true;
+    }
+
+    private string? PreserveProfileDirectory(string profilePath, string username, string sid)
+    {
+        if (!Directory.Exists(profilePath)) return null;
+        var target = Path.Combine(_recoveryRoot,
+            $"{username}-{sid}-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}");
+        Directory.Move(profilePath, target);
+        return target;
+    }
+
+    private void WriteRecoveryRecord(OrphanedProfile profile, string? preservedPath)
+    {
+        var record = Path.Combine(_recoveryRoot,
+            $"{profile.Username}-{profile.Sid}-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}.txt");
+        File.WriteAllText(record,
+            $"Removed orphaned Windows profile registration.{Environment.NewLine}" +
+            $"SID: {profile.Sid}{Environment.NewLine}" +
+            $"Profile path: {profile.Path}{Environment.NewLine}" +
+            $"Preserved folder: {preservedPath ?? "(none existed)"}{Environment.NewLine}");
+    }
+
     private static IEnumerable<DirectoryInfo> GetIncompleteProfileDirectories(string username)
     {
         var root = new DirectoryInfo(UserProfilesRoot);
@@ -87,4 +177,6 @@ public sealed class UserProfileReadinessService
             .Where(directory => string.Equals(directory.Name, username, StringComparison.OrdinalIgnoreCase)
                 || directory.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
     }
+
+    private sealed record OrphanedProfile(string Sid, string Username, string Path);
 }
