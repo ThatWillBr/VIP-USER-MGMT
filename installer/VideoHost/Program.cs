@@ -26,6 +26,7 @@ namespace VIP1132.InstallerVisual
         private readonly string _sentinelPath;
         private readonly MediaElement _video;
         private readonly DispatcherTimer _sentinelTimer;
+        private readonly DispatcherTimer _maximumLifetimeTimer;
 
         public DeploymentWindow(string videoPath, string sentinelPath)
         {
@@ -170,12 +171,14 @@ namespace VIP1132.InstallerVisual
             Content = outer;
 
             Loaded += OnLoaded;
-            Closed += delegate { _sentinelTimer.Stop(); _video.Stop(); };
+            Closed += delegate { _sentinelTimer.Stop(); _maximumLifetimeTimer.Stop(); _video.Stop(); };
             _sentinelTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
             _sentinelTimer.Tick += delegate
             {
                 if (File.Exists(_sentinelPath)) Close();
             };
+            _maximumLifetimeTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(5) };
+            _maximumLifetimeTimer.Tick += delegate { Close(); };
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -183,6 +186,7 @@ namespace VIP1132.InstallerVisual
             _video.Source = new Uri(_videoPath, UriKind.Absolute);
             _video.Play();
             _sentinelTimer.Start();
+            _maximumLifetimeTimer.Start();
         }
     }
 }
