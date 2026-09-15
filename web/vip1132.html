@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Download VIP 1132 User Manager v3.0.12 for Windows." />
+  <meta name="description" content="Download VIP 1132 User Manager v3.0.13 for Windows." />
   <title>VIP 1132 User Manager • PNP@VIP</title>
 
   <link rel="stylesheet" href="style.css" />
@@ -48,6 +48,35 @@
     .vip-header{
       text-align: center;
       padding: 20px 18px 12px;
+    }
+
+    .vip-notice{
+      max-width: 900px;
+      margin: 0 auto 22px;
+      padding: 12px 15px;
+      border: 1px solid rgba(255, 85, 99, 0.85);
+      border-radius: 13px;
+      background: linear-gradient(135deg, rgba(122, 14, 24, 0.82), rgba(67, 8, 18, 0.92));
+      color: #ffe9eb;
+      font-size: 0.89rem;
+      font-weight: 650;
+      line-height: 1.48;
+      box-shadow: 0 0 24px rgba(255, 48, 77, 0.24);
+    }
+
+    .vip-links{
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 15px;
+      font-size: 0.9rem;
+    }
+
+    .vip-links a{
+      color: #aaf8ff;
+      font-weight: 750;
+      text-underline-offset: 3px;
     }
 
     .vip-demo{
@@ -258,25 +287,32 @@
 <body class="vip-subpage">
   <div class="vip-wrap">
     <header class="vip-header">
+      <aside class="vip-notice">
+        Malware claims from the BALL-less room that allegedly copies this free app to sell behind closed source on a website flagged by Norton about scraping financial info, then calling it malware? Laughable... Bring receipts—and your own code.
+      </aside>
       <video class="vip-demo" autoplay muted loop playsinline preload="metadata" aria-label="VIP 1132 animated logo">
         <source src="/assets/vip1132-installation.mp4" type="video/mp4" />
       </video>
 
-      <span class="vip-kicker">● VERSION 3.0.12 AVAILABLE</span>
+      <span class="vip-kicker">● VERSION 3.0.13 AVAILABLE</span>
       <h1 class="vip-title">VIP 1132 User Manager</h1>
       <p class="vip-subtitle">
         A faster, redesigned Windows deployment console that creates the next user, installs Zoom,
         opens Zoom visibly in the new user session, and creates a desktop shortcut for every launch after setup.
       </p>
+      <nav class="vip-links" aria-label="Transparency links">
+        <a href="https://github.com/ThatWillBr/VIP-USER-MGMT">View the source</a>
+        <a href="https://github.com/ThatWillBr/VIP-USER-MGMT/blob/main/security_best_practices_report.md">Security review</a>
+        <a href="https://github.com/ThatWillBr/VIP-USER-MGMT/blob/main/DOWNLOAD-VERIFICATION.md">Verify your download</a>
+      </nav>
     </header>
 
     <main class="vip-panel">
       <div class="vip-panel-inner vip-row">
         <div class="vip-card">
-          <h2>What’s new in v3.0.12</h2>
+          <h2>What’s new in v3.0.13</h2>
           <p>
-            Rebuilt as a lightweight native Windows app for much faster startup, clearer progress,
-            and a polished glass-and-neon interface.
+            Fixes failed first-profile launches without repeating the completed Windows-user or Zoom installation steps.
           </p>
 
           <ul class="vip-bullets">
@@ -285,6 +321,7 @@
             <li>🖱️ Double-click Zoom - VIP 1132 to open Zoom as your new Windows user</li>
             <li>🔵 Desktop shortcut uses Zoom’s regular icon — no Shift/right-click or password entry</li>
             <li>✅ Opens Zoom as the newly created user and verifies the active session</li>
+            <li>🛡️ Preserves incomplete Windows profile folders before retrying and shows the native Windows error code</li>
             <li>✨ Updated cloud-and-train VIP1132 artwork inside the app and explicit window icons</li>
             <li>ⓘ Built-in instructions for the first setup and every later Zoom launch</li>
           </ul>
@@ -292,13 +329,13 @@
 
         <div class="vip-actions">
           <details class="download-menu">
-            <summary class="vip-btn">⬇️ Download v3.0.12 <span aria-hidden="true">⌄</span></summary>
+            <summary class="vip-btn">⬇️ Download v3.0.13 <span aria-hidden="true">⌄</span></summary>
             <div class="download-options">
-              <a class="download-option" href="/downloads/VIP1132-Setup-3.0.12.exe" download>
+              <a class="download-option" href="/downloads/VIP1132-Setup-3.0.13.exe" download>
                 <strong>Installable — Recommended</strong>
                 <span>About 59 MB · Includes everything needed</span>
               </a>
-              <a class="download-option" href="/downloads/VIP1132-Portable-3.0.12.zip" download>
+              <a class="download-option" href="/downloads/VIP1132-Portable-3.0.13.zip" download>
                 <strong>Portable ZIP</strong>
                 <span>Smaller download · Requires .NET 8 Desktop Runtime</span>
               </a>
