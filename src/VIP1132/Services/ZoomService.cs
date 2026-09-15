@@ -11,6 +11,9 @@ public sealed class ZoomService
 {
     public const string CleanZoomUrl = "https://assets.zoom.us/docs/msi-templates/CleanZoom.zip";
     public const string ZoomMsiUrl = "https://zoom.us/client/latest/ZoomInstallerFull.msi?archType=x64";
+    private static readonly TimeSpan ResponseHeaderTimeout = TimeSpan.FromSeconds(45);
+    private static readonly TimeSpan DownloadReadTimeout = TimeSpan.FromSeconds(60);
+    private const int DownloadAttempts = 2;
 
     private static readonly HttpClient Http = CreateHttpClient();
     private static readonly TimeSpan CleanZoomCacheAge = TimeSpan.FromHours(24);
@@ -288,47 +291,72 @@ public sealed class ZoomService
         var temp = destination + ".download";
         try
         {
-            using var response = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-            response.EnsureSuccessStatusCode();
-            var total = response.Content.Headers.ContentLength;
-            await using (var source = await response.Content.ReadAsStreamAsync(cancellationToken))
-            await using (var target = new FileStream(temp, new FileStreamOptions
+            Exception? lastTransientFailure = null;
+            for (var attempt = 1; attempt <= DownloadAttempts; attempt++)
             {
-                Mode = FileMode.Create,
-                Access = FileAccess.Write,
-                Share = FileShare.None,
-                BufferSize = 1024 * 512,
-                Options = FileOptions.Asynchronous | FileOptions.SequentialScan
-            }))
-            {
-                var buffer = new byte[1024 * 512];
-                long received = 0;
-                var lastPercent = -1d;
-                while (true)
+                try
                 {
-                    var read = await source.ReadAsync(buffer.AsMemory(), cancellationToken);
-                    if (read == 0) break;
-                    await target.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
-                    received += read;
-                    if (total is > 0)
+                    using var responseTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    responseTimeout.CancelAfter(ResponseHeaderTimeout);
+                    using var response = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, responseTimeout.Token);
+                    response.EnsureSuccessStatusCode();
+                    var total = response.Content.Headers.ContentLength;
+                    await using var source = await response.Content.ReadAsStreamAsync(cancellationToken);
+                    await using var target = new FileStream(temp, new FileStreamOptions
                     {
-                        var percent = Math.Round(Math.Min(100, received * 100d / total.Value), 1);
-                        if (percent >= lastPercent + 0.1 || percent >= 100)
+                        Mode = FileMode.Create,
+                        Access = FileAccess.Write,
+                        Share = FileShare.None,
+                        BufferSize = 1024 * 512,
+                        Options = FileOptions.Asynchronous | FileOptions.SequentialScan
+                    });
+                    var buffer = new byte[1024 * 512];
+                    long received = 0;
+                    var lastPercent = -1d;
+                    while (true)
+                    {
+                        using var readTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                        readTimeout.CancelAfter(DownloadReadTimeout);
+                        var read = await source.ReadAsync(buffer.AsMemory(), readTimeout.Token);
+                        if (read == 0) break;
+                        await target.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
+                        received += read;
+                        if (total is > 0)
                         {
-                            progress?.Report(percent);
-                            lastPercent = percent;
+                            var percent = Math.Round(Math.Min(100, received * 100d / total.Value), 1);
+                            if (percent >= lastPercent + 0.1 || percent >= 100)
+                            {
+                                progress?.Report(percent);
+                                lastPercent = percent;
+                            }
                         }
                     }
-                }
 
-                await target.FlushAsync(cancellationToken);
+                    await target.FlushAsync(cancellationToken);
+                    if (!validator(temp))
+                        throw new InvalidDataException(invalidDownloadMessage);
+
+                    File.Move(temp, destination, true);
+                    progress?.Report(100);
+                    return;
+                }
+                catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+                {
+                    lastTransientFailure = ex;
+                    try { if (File.Exists(temp)) File.Delete(temp); } catch { }
+                    if (attempt == DownloadAttempts) break;
+                }
+                catch (HttpRequestException ex)
+                {
+                    lastTransientFailure = ex;
+                    try { if (File.Exists(temp)) File.Delete(temp); } catch { }
+                    if (attempt == DownloadAttempts) break;
+                }
             }
 
-            if (!validator(temp))
-                throw new InvalidDataException(invalidDownloadMessage);
-
-            File.Move(temp, destination, true);
-            progress?.Report(100);
+            throw new TimeoutException(
+                $"Zoom's download did not respond within {ResponseHeaderTimeout.TotalSeconds:0} seconds or continue within {DownloadReadTimeout.TotalSeconds:0} seconds after {DownloadAttempts} attempts. Check the network connection and try setup again; the existing account and completed steps will be preserved.",
+                lastTransientFailure);
         }
         finally
         {

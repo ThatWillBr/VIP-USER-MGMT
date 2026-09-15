@@ -45,7 +45,7 @@ Run:
 
 Outputs:
 
-- `dist\VIP1132-Setup-3.0.15.exe` — self-contained installer; no separate .NET install required.
+- `dist\VIP1132-Setup-3.0.16.exe` — self-contained installer; no separate .NET install required.
 - `dist\VIP1132-portable\` — much smaller framework-dependent build for PCs that already have the .NET 8 Desktop Runtime.
 
 ## Security and signing
