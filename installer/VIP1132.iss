@@ -1,5 +1,5 @@
 #define AppName "Will's VIP 1132 User Manager"
-#define AppVersion "3.0.13"
+#define AppVersion "3.0.14"
 #define AppPublisher "WILL"
 #ifndef PublishDir
   #define PublishDir "..\build\publish"
