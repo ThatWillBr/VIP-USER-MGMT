@@ -45,9 +45,11 @@ Run:
 
 Outputs:
 
-- `dist\VIP1132-Setup-3.0.12.exe` — self-contained installer; no separate .NET install required.
+- `dist\VIP1132-Setup-3.0.13.exe` — self-contained installer; no separate .NET install required.
 - `dist\VIP1132-portable\` — much smaller framework-dependent build for PCs that already have the .NET 8 Desktop Runtime.
 
 ## Security and signing
 
 Numeric passwords are intentionally preserved for compatibility with the original room workflow, but they are weak credentials. Use this only for the isolated local room accounts it was designed for. The generated binaries are unsigned until a Windows code-signing certificate is supplied, so SmartScreen may warn on first launch.
+
+Before installing a downloaded release, follow [DOWNLOAD-VERIFICATION.md](DOWNLOAD-VERIFICATION.md). The completed source review and known limitations are documented in [security_best_practices_report.md](security_best_practices_report.md).

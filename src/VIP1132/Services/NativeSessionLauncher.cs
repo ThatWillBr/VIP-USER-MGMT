@@ -46,7 +46,8 @@ public static class NativeSessionLauncher
         catch (Win32Exception ex)
         {
             throw new Win32Exception(ex.NativeErrorCode,
-                $"Windows could not start Zoom as {Environment.MachineName}\\{username}: {ex.Message}");
+                $"Windows could not start Zoom as {Environment.MachineName}\\{username} " +
+                $"(Win32 {ex.NativeErrorCode} / 0x{ex.NativeErrorCode:X8}): {ex.Message}");
         }
     }
 

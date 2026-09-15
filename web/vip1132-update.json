@@ -1,8 +1,8 @@
 {
-  "version": "3.0.12",
-  "title": "VIP 1132 v3.0.12 is available",
-  "notes": "Fixes the in-app logo and window icons to use the new VIP1132 artwork. Includes faster setup and the double-click Zoom shortcut.",
-  "installerUrl": "https://pnpatvip.com/downloads/VIP1132-Setup-3.0.12.exe",
-  "portableUrl": "https://pnpatvip.com/downloads/VIP1132-Portable-3.0.12.zip",
-  "sha256": "AEDCD1004383A315CDA00BAA8DAC6B3375385815E0A6DBA46A0B9055B6F9FB55"
+  "version": "3.0.13",
+  "title": "VIP 1132 v3.0.13 is available",
+  "notes": "Fixes Windows profile readiness after a failed first logon. Retry preserves the existing Windows account and Zoom installation, backs up incomplete profile folders, and reports the native Windows error code.",
+  "installerUrl": "https://pnpatvip.com/downloads/VIP1132-Setup-3.0.13.exe",
+  "portableUrl": "https://pnpatvip.com/downloads/VIP1132-Portable-3.0.13.zip",
+  "sha256": "37CA67E0E9507399F806A7B2DBAB094FE3E1ABE7342ECDB4B0E0C8F45D061BFC"
 }

@@ -17,6 +17,7 @@ public sealed class ZoomService
     private static readonly TimeSpan ZoomInstallerCacheAge = TimeSpan.FromHours(12);
     private readonly string _publicDownloads = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "..", "Downloads");
+    private readonly UserProfileReadinessService _profiles = new();
 
     public string PublicDownloads => Path.GetFullPath(_publicDownloads);
     public string ZoomMsiPath => Path.Combine(PublicDownloads, "ZoomInstallerFull.msi");
@@ -143,15 +144,24 @@ public sealed class ZoomService
                 NativeSessionLauncher.ShowZoomWindow(existing);
                 return new OperationResult(true, "Zoom is already open as the managed Windows user.");
             }
+
+            var profileRecovery = _profiles.RepairIncompleteProfileIfNeeded(username);
+            if (!profileRecovery.Success)
+                return profileRecovery;
+
             // Retain the handle returned by Windows: it grants access to verify the new
             // process even when a non-elevated shortcut cannot reopen another user's process.
             using var launched = NativeSessionLauncher.LaunchAsUser(username, password, executable, []);
             var verified = await WaitForZoomProcessAsUserAsync(
                 username, launched, TimeSpan.FromSeconds(60), cancellationToken);
-            return verified
-                ? new OperationResult(true, $"Zoom opened visibly as {Environment.MachineName}\\{username}.")
-                : new OperationResult(false,
+            if (!verified)
+                return new OperationResult(false,
                     $"Zoom did not open visibly as {Environment.MachineName}\\{username} within 60 seconds. Close Zoom and try the desktop shortcut again.");
+
+            var profileVerified = _profiles.VerifyRegisteredProfile(username);
+            return profileVerified.Success
+                ? new OperationResult(true, $"Zoom opened visibly as {Environment.MachineName}\\{username}.")
+                : profileVerified;
         }
         catch (Exception ex)
         {

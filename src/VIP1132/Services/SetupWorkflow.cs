@@ -57,6 +57,29 @@ public sealed class SetupWorkflow
         {
             var localUsers = await _users.ListUsersAsync(cancellationToken);
             var knownUsers = localUsers.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            // Once the account and MSI setup have completed, a launch failure must be retried
+            // in place. Re-running CleanZoom and replacing the account loses completed work and
+            // makes a Windows profile failure harder to repair.
+            if (state.CurrentUsername is { } resumableUser &&
+                state.LastAttemptUserNumber == state.CurrentUserNumber &&
+                knownUsers.Contains(resumableUser) &&
+                state.LastSetupStatus.StartsWith("Failed:", StringComparison.Ordinal) &&
+                ZoomService.FindZoomExecutable() is not null)
+            {
+                Report(91.0, "Resume Zoom", $"Retrying Zoom for existing user {Environment.MachineName}\\{resumableUser}; the account and Zoom installation are preserved.");
+                var resumed = await _zoom.LaunchAsUserAsync(resumableUser, resumableUser, cancellationToken);
+                if (!resumed.Success) throw new InvalidOperationException(resumed.Message);
+
+                Report(97.0, "Desktop shortcut", "Refreshing the Zoom desktop shortcut for the existing user.");
+                var resumedShortcut = ZoomShortcutService.Create(resumableUser);
+                state.LastSetupStatus = "Completed";
+                await _stateService.SaveAsync(state);
+                var resumedCompletion = $"{resumed.Message} Existing setup was resumed without replacing the account or reinstalling Zoom. Desktop shortcut: {resumedShortcut}";
+                Report(100.0, "Complete", resumedCompletion, LogLevel.Success);
+                return (state, new OperationResult(true, resumedCompletion));
+            }
+
             var highest = localUsers
                 .Select(user => int.TryParse(user, out var number) ? number : 0)
                 .DefaultIfEmpty()
