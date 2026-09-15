@@ -8,12 +8,14 @@ public sealed class SetupWorkflow
     private readonly StateService _stateService;
     private readonly WindowsUserService _users;
     private readonly ZoomService _zoom;
+    private readonly UserProfileReadinessService _profiles;
 
-    public SetupWorkflow(StateService stateService, WindowsUserService users, ZoomService zoom)
+    public SetupWorkflow(StateService stateService, WindowsUserService users, ZoomService zoom, UserProfileReadinessService profiles)
     {
         _stateService = stateService;
         _users = users;
         _zoom = zoom;
+        _profiles = profiles;
     }
 
     public async Task<AppState> InitializeStateAsync(CancellationToken cancellationToken = default)
@@ -67,6 +69,9 @@ public sealed class SetupWorkflow
                 state.LastSetupStatus.StartsWith("Failed:", StringComparison.Ordinal) &&
                 ZoomService.FindZoomExecutable() is not null)
             {
+                var repair = _profiles.RepairIncompleteProfileIfNeeded(resumableUser);
+                if (!repair.Success) throw new InvalidOperationException(repair.Message);
+                Report(89.0, "Profile recovery", repair.Message, LogLevel.Info);
                 Report(91.0, "Resume Zoom", $"Retrying Zoom for existing user {Environment.MachineName}\\{resumableUser}; the account and Zoom installation are preserved.");
                 var resumed = await _zoom.LaunchAsUserAsync(resumableUser, resumableUser, cancellationToken);
                 if (!resumed.Success) throw new InvalidOperationException(resumed.Message);
@@ -92,6 +97,9 @@ public sealed class SetupWorkflow
             var password = username;
 
             Report(2.5, "Preflight", $"Preparing Windows user {username}.", LogLevel.Info);
+            var staleProfiles = _profiles.RepairOrphanedProfiles(knownUsers);
+            if (!staleProfiles.Success) throw new InvalidOperationException(staleProfiles.Message);
+            Report(4.0, "Profile recovery", staleProfiles.Message, LogLevel.Info);
 
             var downloadSync = new object();
             var latestDownloadPercent = 0d;
@@ -145,7 +153,13 @@ public sealed class SetupWorkflow
                     if (!deleted.Success)
                         Report(36.0, "Old user", "Account deletion warning: " + deleted.BestMessage, LogLevel.Warning);
                     else
+                    {
+                        knownUsers.Remove(oldUsername);
+                        var removedProfile = _profiles.RepairOrphanedProfiles(knownUsers);
+                        if (!removedProfile.Success) throw new InvalidOperationException(removedProfile.Message);
+                        Report(37.0, "Profile recovery", removedProfile.Message, LogLevel.Info);
                         Report(36.0, "Old user", $"Windows account {oldUsername} deleted in {FormatDuration(accountTimer.Elapsed)}.", LogLevel.Success);
+                    }
                 }
                 else
                 {

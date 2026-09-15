@@ -43,7 +43,7 @@ public partial class MainWindow : Window
             Interval = TimeSpan.FromMilliseconds(40)
         };
         _progressTimer.Tick += (_, _) => AdvanceProgressDisplay();
-        _workflow = new SetupWorkflow(_stateService, _users, _zoom);
+        _workflow = new SetupWorkflow(_stateService, _users, _zoom, new UserProfileReadinessService());
         MachineText.Text = Environment.MachineName.ToUpperInvariant();
         AdminStatusText.Text = App.IsAdministrator() ? "Administrator" : "Standard access";
         SourceInitialized += (_, _) => EnableDarkTitleBar();
