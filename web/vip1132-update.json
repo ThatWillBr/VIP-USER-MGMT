@@ -1,8 +1,8 @@
 {
-  "version": "3.0.13",
-  "title": "VIP 1132 v3.0.13 is available",
-  "notes": "Fixes Windows profile readiness after a failed first logon. Retry preserves the existing Windows account and Zoom installation, backs up incomplete profile folders, and reports the native Windows error code.",
-  "installerUrl": "https://pnpatvip.com/downloads/VIP1132-Setup-3.0.13.exe",
-  "portableUrl": "https://pnpatvip.com/downloads/VIP1132-Portable-3.0.13.zip",
-  "sha256": "37CA67E0E9507399F806A7B2DBAB094FE3E1ABE7342ECDB4B0E0C8F45D061BFC"
+  "version": "3.0.14",
+  "title": "VIP 1132 v3.0.14 is available",
+  "notes": "The application version badge now reads from the installed assembly, so the screen and installer always report the same release. Includes the v3.0.13 profile-readiness recovery.",
+  "installerUrl": "https://pnpatvip.com/downloads/VIP1132-Setup-3.0.14.exe",
+  "portableUrl": "https://pnpatvip.com/downloads/VIP1132-Portable-3.0.14.zip",
+  "sha256": "003A53B1CDF3B6F8690674F2A776B255A9FCE737CCDC55E476A76BDCAAFF991C"
 }

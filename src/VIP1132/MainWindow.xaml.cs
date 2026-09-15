@@ -36,6 +36,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        AppVersionText.Text = $"v{typeof(App).Assembly.GetName().Version?.ToString(3) ?? "0.0.0"}";
         FitStartupSizeToWorkArea();
         _progressTimer = new DispatcherTimer(DispatcherPriority.Render)
         {
