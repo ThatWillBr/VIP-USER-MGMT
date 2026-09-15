@@ -1,5 +1,5 @@
 #define AppName "Will's VIP 1132 User Manager"
-#define AppVersion "3.0.16"
+#define AppVersion "3.0.17"
 #define AppPublisher "WILL"
 #ifndef PublishDir
   #define PublishDir "..\build\publish"
@@ -76,7 +76,7 @@ var
   HostPath: string;
   VideoPath: string;
 begin
-  if CurStep = ssInstall then
+  if (CurStep = ssInstall) and not WizardSilent() then
   begin
     ExtractTemporaryFile('VIP1132.InstallerVisual.exe');
     ExtractTemporaryFile('VIP1132.InstallerVisual.exe.config');

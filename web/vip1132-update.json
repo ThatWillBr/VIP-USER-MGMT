@@ -1,8 +1,8 @@
 {
-  "version": "3.0.16",
-  "title": "VIP 1132 v3.0.16 is available",
-  "notes": "Retries a stalled Zoom download once, then stops with a clear timeout instead of waiting indefinitely. Existing managed-user state and completed setup steps are preserved.",
-  "installerUrl": "https://pnpatvip.com/downloads/VIP1132-Setup-3.0.16.exe",
-  "portableUrl": "https://pnpatvip.com/downloads/VIP1132-Portable-3.0.16.zip",
-  "sha256": "11CA5ADD6F5D200CC9143BBD178060841FD4D3C442992830E66C7E6A9E7671C7"
+  "version": "3.0.17",
+  "title": "VIP 1132 v3.0.17 is available",
+  "notes": "Silent updates no longer start the installation animation, and interactive installs close it after five minutes. Existing managed-user state and completed setup steps are preserved.",
+  "installerUrl": "https://pnpatvip.com/downloads/VIP1132-Setup-3.0.17.exe",
+  "portableUrl": "https://pnpatvip.com/downloads/VIP1132-Portable-3.0.17.zip",
+  "sha256": "F541A1D6C33C51B8FE8E1A796F68B837E389CE35162C03A1CBE2C5DDBDD7C0B6"
 }
