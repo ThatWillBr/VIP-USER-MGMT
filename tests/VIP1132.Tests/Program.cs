@@ -56,6 +56,7 @@ internal static class Program
             Check(!ZoomShortcutService.MatchesManagedUser("-1", "invalid", "-1"), "Negative account rejected");
             Check(!ZoomShortcutService.MatchesManagedUser("2147483648", "invalid", "2147483648"), "Overflow account rejected");
             Check(!ZoomShortcutService.MatchesManagedUser("42", "invalid", null), "Missing managed state rejected");
+            Check(!string.IsNullOrWhiteSpace(ZoomShortcutService.ResolveExecutablePath()), "Executable path resolution succeeds");
 
             var users = new WindowsUserService();
             foreach (var invalid in new[] { "name", "42\n", "42 & whoami", "٤٢" })

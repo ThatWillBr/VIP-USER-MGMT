@@ -147,7 +147,7 @@ public sealed class UpdateService
     private static HttpClient CreateHttpClient()
     {
         var client = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("VIP1132-Updater/3.0");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("VIP1132-Updater/4.0");
         return client;
     }
 }

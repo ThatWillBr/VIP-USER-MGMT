@@ -30,6 +30,18 @@ public sealed class SetupWorkflow
                 await _stateService.SaveAsync(state);
             }
         }
+
+        if (state.CurrentUsername is { } username && ZoomService.FindZoomExecutable() is not null)
+        {
+            try
+            {
+                ZoomShortcutService.Create(username);
+            }
+            catch
+            {
+            }
+        }
+
         return state;
     }
 

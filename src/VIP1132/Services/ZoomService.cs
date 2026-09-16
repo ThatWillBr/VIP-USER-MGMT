@@ -420,7 +420,7 @@ public sealed class ZoomService
     private static HttpClient CreateHttpClient()
     {
         var client = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("VIP1132/3.0");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("VIP1132/4.0");
         return client;
     }
 

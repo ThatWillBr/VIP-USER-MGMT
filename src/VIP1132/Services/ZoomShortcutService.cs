@@ -18,10 +18,83 @@ public static class ZoomShortcutService
         username == number.ToString(System.Globalization.CultureInfo.InvariantCulture) &&
         GetUserSid(username) == sid;
 
+    public static string ResolveExecutablePath()
+    {
+        var candidates = new[]
+        {
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "WILL", "VIP 1132", "VIP1132.exe"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WILL", "VIP 1132", "VIP1132.exe"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "WILL", "VIP 1132", "VIP1132.exe")
+        };
+
+        foreach (var candidate in candidates)
+        {
+            if (File.Exists(candidate))
+                return candidate;
+        }
+
+        var currentPath = Environment.ProcessPath;
+        if (string.IsNullOrEmpty(currentPath) || !File.Exists(currentPath))
+            throw new InvalidOperationException("The VIP 1132 application path is unavailable.");
+
+        var tempPath = Path.GetTempPath();
+        var userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+        bool isTemp = currentPath.StartsWith(tempPath, StringComparison.OrdinalIgnoreCase) ||
+                      currentPath.Contains(@"\Temp\", StringComparison.OrdinalIgnoreCase);
+
+        bool isUserPrivate = !string.IsNullOrEmpty(userProfilePath) &&
+                             currentPath.StartsWith(userProfilePath, StringComparison.OrdinalIgnoreCase);
+
+        if (isTemp || isUserPrivate)
+        {
+            try
+            {
+                var targetDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "WILL", "VIP 1132");
+                Directory.CreateDirectory(targetDir);
+
+                var baseDir = AppContext.BaseDirectory;
+                CopyDirectoryContents(baseDir, targetDir);
+
+                var permanentExe = Path.Combine(targetDir, Path.GetFileName(currentPath));
+                if (File.Exists(permanentExe))
+                    return permanentExe;
+            }
+            catch
+            {
+                // Fall back to current path if copy fails
+            }
+        }
+
+        return currentPath;
+    }
+
+    private static void CopyDirectoryContents(string sourceDir, string targetDir)
+    {
+        Directory.CreateDirectory(targetDir);
+        foreach (var file in Directory.GetFiles(sourceDir))
+        {
+            var fileName = Path.GetFileName(file);
+            var destFile = Path.Combine(targetDir, fileName);
+            try
+            {
+                File.Copy(file, destFile, overwrite: true);
+            }
+            catch
+            {
+            }
+        }
+        foreach (var subDir in Directory.GetDirectories(sourceDir))
+        {
+            var dirName = Path.GetFileName(subDir);
+            var destSubDir = Path.Combine(targetDir, dirName);
+            CopyDirectoryContents(subDir, destSubDir);
+        }
+    }
+
     public static string Create(string username)
     {
-        var executable = Environment.ProcessPath
-            ?? throw new InvalidOperationException("The VIP 1132 application path is unavailable.");
+        var executable = ResolveExecutablePath();
         var zoom = ZoomService.FindZoomExecutable()
             ?? throw new FileNotFoundException("Zoom.exe was not found for the desktop shortcut.");
         // CommonDesktop is visible on the operator's desktop even when UAC used another admin account.
@@ -55,9 +128,16 @@ public static class ZoomShortcutService
 
             dynamic saved = ((dynamic)shell).CreateShortcut(temporary);
             check = saved;
-            if (!string.Equals((string)saved.TargetPath, executable, StringComparison.OrdinalIgnoreCase) ||
-                (string)saved.Arguments != arguments ||
-                !string.Equals((string)saved.IconLocation, icon, StringComparison.OrdinalIgnoreCase))
+
+            var savedTarget = (string)saved.TargetPath;
+            var savedIcon = (string)saved.IconLocation;
+
+            bool targetMatches = string.Equals(savedTarget, executable, StringComparison.OrdinalIgnoreCase) ||
+                                 string.Equals(Path.GetFullPath(savedTarget), Path.GetFullPath(executable), StringComparison.OrdinalIgnoreCase);
+
+            bool iconMatches = string.Equals(savedIcon.Replace(" ", ""), icon.Replace(" ", ""), StringComparison.OrdinalIgnoreCase);
+
+            if (!targetMatches || (string)saved.Arguments != arguments || !iconMatches)
                 throw new IOException("Windows did not save the Zoom shortcut correctly.");
             File.Move(temporary, path, true);
             return path;
