@@ -1,7 +1,7 @@
 {
   "version": "3.0.19",
   "title": "VIP 1132 v3.0.19 is available",
-  "notes": "Recognizes standard Windows profile state 0x204 for new users, uses unique temporary files to prevent state save permissions conflicts, and preserves existing managed-user state.",
+  "notes": "Recognizes standard Windows profile state 0x204 for new users, handles ACL-restricted orphan profile folders safely, prevents state save file lock conflicts, and preserves existing managed-user state.",
   "installerUrl": "https://pnpatvip.com/downloads/VIP1132-Setup-3.0.19.exe",
   "portableUrl": "https://pnpatvip.com/downloads/VIP1132-Portable-3.0.19.zip",
   "sha256": "28A7DC25DE457EF28DC0E9E5985461BD5B4C88E27D17A9AF8AEDAC959097E83C"
