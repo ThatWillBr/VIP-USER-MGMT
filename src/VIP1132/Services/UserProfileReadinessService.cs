@@ -36,7 +36,7 @@ public sealed class UserProfileReadinessService
             if (!string.Equals(path, expectedPath, StringComparison.OrdinalIgnoreCase))
                 return new OperationResult(false,
                     $"Windows registered {Environment.MachineName}\\{username} with profile path '{path ?? "(missing)"}', not '{expectedPath}'. The existing account was preserved.");
-            if (state != 0)
+            if ((state & 0x81) != 0)
                 return new OperationResult(false,
                     $"Windows reports the profile for {Environment.MachineName}\\{username} is still in state 0x{state:X}. Close every process for that account and retry.");
             return new OperationResult(true, "The Windows profile is already registered.");
@@ -117,7 +117,7 @@ public sealed class UserProfileReadinessService
         using var profileKey = Registry.LocalMachine.OpenSubKey($"{ProfileListPath}\\{sid}");
         var path = profileKey?.GetValue("ProfileImagePath") as string;
         var state = profileKey?.GetValue("State") as int? ?? 0;
-        return profileKey is not null && string.Equals(path, expectedPath, StringComparison.OrdinalIgnoreCase) && state == 0
+        return profileKey is not null && string.Equals(path, expectedPath, StringComparison.OrdinalIgnoreCase) && (state & 0x81) == 0
             ? new OperationResult(true, "Windows profile initialization completed.")
             : new OperationResult(false,
                 $"Windows did not finish initializing the profile for {Environment.MachineName}\\{username}. Expected '{expectedPath}' (registered path: '{path ?? "none"}', state: 0x{state:X}).");

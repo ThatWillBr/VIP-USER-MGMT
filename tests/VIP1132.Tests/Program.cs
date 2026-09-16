@@ -68,6 +68,15 @@ internal static class Program
             try { users.CreateAsync("42", "unused", cancelled.Token).GetAwaiter().GetResult(); throw new Exception("Cancellation ignored"); }
             catch (OperationCanceledException) { _passed++; }
 
+            foreach (var validState in new[] { 0, 0x4, 0x100, 0x200, 0x204 })
+            {
+                Check((validState & 0x81) == 0, $"Profile state 0x{validState:X} recognized as valid profile state");
+            }
+            foreach (var corruptState in new[] { 0x1, 0x80, 0x81 })
+            {
+                Check((corruptState & 0x81) != 0, $"Profile state 0x{corruptState:X} recognized as corrupt/temporary profile state");
+            }
+
             using var current = Process.GetCurrentProcess();
             using var identity = WindowsIdentity.GetCurrent();
             Check(NativeSessionLauncher.TryGetProcessOwner(current) == identity.Name, "Native process ownership lookup works");

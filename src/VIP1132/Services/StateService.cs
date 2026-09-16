@@ -34,9 +34,21 @@ public sealed class StateService
     {
         Directory.CreateDirectory(DataDirectory);
         state.LastUpdatedUtc = DateTimeOffset.UtcNow;
-        var temp = StatePath + ".tmp";
-        await using (var stream = File.Create(temp))
-            await JsonSerializer.SerializeAsync(stream, state, JsonOptions);
-        File.Move(temp, StatePath, true);
+        var temp = $"{StatePath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            await using (var stream = File.Create(temp))
+            {
+                await JsonSerializer.SerializeAsync(stream, state, JsonOptions);
+            }
+            File.Move(temp, StatePath, true);
+        }
+        finally
+        {
+            if (File.Exists(temp))
+            {
+                try { File.Delete(temp); } catch { }
+            }
+        }
     }
 }

@@ -1,8 +1,8 @@
 {
-  "version": "3.0.18",
-  "title": "VIP 1132 v3.0.18 is available",
-  "notes": "Fixes valid Zoom downloads being rejected as invalid MSI packages by closing the download file before Windows Installer validation. Updates preserve each machine's existing managed-user state.",
-  "installerUrl": "https://pnpatvip.com/downloads/VIP1132-Setup-3.0.18.exe",
-  "portableUrl": "https://pnpatvip.com/downloads/VIP1132-Portable-3.0.18.zip",
-  "sha256": "703A2C57B7B9EAF14976A0EC2A5CB88EE6888DBBFE3F8C1CE032473C6C54E9ED"
+  "version": "3.0.19",
+  "title": "VIP 1132 v3.0.19 is available",
+  "notes": "Recognizes standard Windows profile state 0x204 for new users, uses unique temporary files to prevent state save permissions conflicts, and preserves existing managed-user state.",
+  "installerUrl": "https://pnpatvip.com/downloads/VIP1132-Setup-3.0.19.exe",
+  "portableUrl": "https://pnpatvip.com/downloads/VIP1132-Portable-3.0.19.zip",
+  "sha256": "3E5B30CBDD9044B47A05CFF50A2FD44EE5074869C8A1347606F56D777C7873E9"
 }
