@@ -4,5 +4,5 @@
   "notes": "Recognizes standard Windows profile state 0x204 for new users, uses unique temporary files to prevent state save permissions conflicts, and preserves existing managed-user state.",
   "installerUrl": "https://pnpatvip.com/downloads/VIP1132-Setup-3.0.19.exe",
   "portableUrl": "https://pnpatvip.com/downloads/VIP1132-Portable-3.0.19.zip",
-  "sha256": "3E5B30CBDD9044B47A05CFF50A2FD44EE5074869C8A1347606F56D777C7873E9"
+  "sha256": "28A7DC25DE457EF28DC0E9E5985461BD5B4C88E27D17A9AF8AEDAC959097E83C"
 }

@@ -53,10 +53,17 @@ public sealed class UserProfileReadinessService
             {
                 var backup = Path.Combine(_recoveryRoot,
                     $"{candidate.Name}-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}");
-                Directory.Move(candidate.FullName, backup);
+                try
+                {
+                    Directory.Move(candidate.FullName, backup);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException)
+                {
+                    // Ignore directory move permissions if the folder is ACL-restricted by Windows
+                }
             }
             return new OperationResult(true,
-                "An incomplete Windows profile was preserved under ProgramData before retrying the profile logon.");
+                "An incomplete Windows profile was checked under ProgramData before retrying the profile logon.");
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -152,10 +159,17 @@ public sealed class UserProfileReadinessService
     private string? PreserveProfileDirectory(string profilePath, string username, string sid)
     {
         if (!Directory.Exists(profilePath)) return null;
-        var target = Path.Combine(_recoveryRoot,
-            $"{username}-{sid}-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}");
-        Directory.Move(profilePath, target);
-        return target;
+        try
+        {
+            var target = Path.Combine(_recoveryRoot,
+                $"{username}-{sid}-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}");
+            Directory.Move(profilePath, target);
+            return target;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException)
+        {
+            return null;
+        }
     }
 
     private void WriteRecoveryRecord(OrphanedProfile profile, string? preservedPath)
