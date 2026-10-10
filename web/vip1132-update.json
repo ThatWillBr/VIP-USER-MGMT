@@ -4,5 +4,5 @@
   "notes": "Version 4.0 resolves desktop shortcut target path issues across temporary directories and multi-user ACL permissions, ensuring the Zoom - VIP 1132 shortcut is permanently accessible to all Windows users.",
   "installerUrl": "https://pnpatvip.com/downloads/VIP1132-Setup-4.0.0.exe",
   "portableUrl": "https://pnpatvip.com/downloads/VIP1132-Portable-4.0.0.zip",
-  "sha256": "1C10F5380BE1ED90378D6800672FBDA1E8637960C374F4D3901261D9C8A308EE"
+  "sha256": "B47112CF5181683429DF50A4E3745DF579C8D18ECFD96607F632D1AEECD7D740"
 }
